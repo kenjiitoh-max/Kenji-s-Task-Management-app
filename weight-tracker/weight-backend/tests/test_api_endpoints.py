@@ -61,3 +61,14 @@ def test_status(client: TestClient):
     body = client.get("/api/status").json()
     assert body["entries_count"] == 1
     assert body["latest_weight_kg"] == 68.4
+
+
+def test_password_protection(client: TestClient, monkeypatch):
+    import app.main as main_module
+
+    monkeypatch.setattr(main_module, "APP_PASSWORD", "s3cret")
+
+    assert client.get("/healthz").status_code == 200
+    assert client.get("/api/weight").status_code == 401
+    assert client.get("/api/weight", auth=("kenji", "wrong")).status_code == 401
+    assert client.get("/api/weight", auth=("kenji", "s3cret")).status_code == 200

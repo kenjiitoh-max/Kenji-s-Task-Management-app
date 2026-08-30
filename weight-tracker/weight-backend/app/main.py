@@ -1,4 +1,6 @@
+import base64
 import os
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from enum import Enum
@@ -9,13 +11,16 @@ import aiosqlite
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field, field_validator
 
 load_dotenv()
 
 # Database path - use /data/app.db for persistent volume in production
 DB_PATH = os.getenv("DB_PATH", "/data/app.db" if os.path.exists("/data") else "app.db")
+
+# 公開URLに置くとき用の簡易パスワード。未設定なら認証なしで動く（ローカル開発向け）。
+APP_PASSWORD = os.getenv("APP_PASSWORD", "")
 
 
 class TimeScale(str, Enum):
@@ -171,6 +176,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def require_password(request: Request, call_next):
+    """APP_PASSWORD が設定されていれば Basic 認証をかける（ユーザー名は任意）。"""
+    if not APP_PASSWORD or request.url.path == "/healthz":
+        return await call_next(request)
+
+    header = request.headers.get("authorization", "")
+    if header.startswith("Basic "):
+        try:
+            decoded = base64.b64decode(header[6:]).decode("utf-8")
+        except (ValueError, UnicodeDecodeError):
+            decoded = ""
+        _, _, password = decoded.partition(":")
+        if secrets.compare_digest(password, APP_PASSWORD):
+            return await call_next(request)
+
+    return Response(
+        status_code=401,
+        headers={"WWW-Authenticate": 'Basic realm="weight-tracker"'},
+    )
 
 
 @app.get("/healthz")

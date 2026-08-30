@@ -81,6 +81,24 @@ docker run -p 8000:8000 -v $(pwd)/data:/data weight-tracker
 
 `/data` をボリュームにすると SQLite の中身が残ります（`DB_PATH` の既定値が `/data/app.db` になります）。
 
+## Fly.io へデプロイ
+
+`fly.toml` 同梱なので、`weight-tracker/` で以下を実行すれば公開できます。
+
+```bash
+fly auth login
+fly launch --copy-config --no-deploy    # 初回のみ。app 名は fly.toml の app を編集
+fly volumes create weight_tracker_data --region nrt --size 1   # SQLite の保存先
+fly secrets set APP_PASSWORD='任意のパスワード'                 # 公開するなら必須
+fly deploy
+```
+
+`APP_PASSWORD` を設定すると全ページに Basic 認証がかかります（ユーザー名は任意、パスワードのみ照合）。
+`/healthz` だけは Fly のヘルスチェック用に認証なしです。未設定だと誰でも読み書きできるので、
+公開URLで使うときは必ず設定してください。
+
+データは `/data/app.db`（Fly ボリューム）に保存されるので、デプロイし直しても記録は残ります。
+
 ## 学習ロードマップ
 
 このスターターを起点に、少しずつ「縦串」を太くしていくのがおすすめです。
