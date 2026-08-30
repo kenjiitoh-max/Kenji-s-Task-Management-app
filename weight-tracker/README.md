@@ -45,6 +45,32 @@ cp -r weight-frontend weight-backend/static
 その状態でバックエンドを起動すると http://localhost:8000/ で画面が開きます
 （Docker イメージも同じ仕組みです）。
 
+### 同じ Wi-Fi のスマホから使う（macOS）
+
+自分の Mac をサーバーにして、家の中のスマホから記録する使い方です。費用も外部サービスも不要。
+
+```bash
+# 1. フロントをバックエンドから配信できるように置く
+cd weight-tracker
+mkdir -p weight-backend/static && cp weight-frontend/index.html weight-backend/static/index.html
+
+# 2. データを残したい場所を DB_PATH に指定して起動（--host 0.0.0.0 が肝心）
+cd weight-backend
+DB_PATH="$HOME/weight.db" poetry run fastapi run app/main.py --host 0.0.0.0 --port 8000
+
+# 3. 別ターミナルで Mac の LAN 内 IP を調べる
+ipconfig getifaddr en0     # Wi-Fi。出なければ en1 を試す
+```
+
+スマホのブラウザで `http://<出てきたIP>:8000/`（例: `http://192.168.1.23:8000/`）を開きます。
+
+- `--host 0.0.0.0` は「同じネットワークの他の端末からの接続も受ける」という意味です。
+  既定の `127.0.0.1` だと Mac 自身からしか開けません。
+- 初回起動時に macOS のファイアウォール確認が出たら「許可」を選びます。
+- 同じネットワーク内の他人も開けてしまうので、気になるなら `APP_PASSWORD=好きなパスワード` を
+  頭に付けて起動すると Basic 認証がかかります。
+- Mac をスリープさせると止まります。外出先からも使いたくなったら Fly.io へのデプロイ（下記）へ。
+
 ### テスト
 
 ```bash
