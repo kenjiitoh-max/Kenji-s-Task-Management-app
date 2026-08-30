@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from pydantic import ValidationError
@@ -32,6 +32,18 @@ def test_weight_entry_rejects_invalid_body_fat():
             weight_kg=70.0,
             body_fat_percentage=120.0,
         )
+
+
+def test_timestamp_is_normalized_to_utc():
+    jst = timezone(timedelta(hours=9))
+    entry = WeightEntry(timestamp=datetime(2026, 8, 30, 9, 0, tzinfo=jst), weight_kg=70.0)
+    assert entry.timestamp == datetime(2026, 8, 30, 0, 0, tzinfo=timezone.utc)
+    assert entry.timestamp.tzinfo == timezone.utc
+
+
+def test_naive_timestamp_is_treated_as_utc():
+    entry = WeightEntry(timestamp=datetime(2026, 8, 30, 0, 0), weight_kg=70.0)
+    assert entry.timestamp == datetime(2026, 8, 30, 0, 0, tzinfo=timezone.utc)
 
 
 def test_cutoff_ordering():

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 load_dotenv()
 
@@ -25,6 +25,17 @@ class TimeScale(str, Enum):
     YEAR = "year"
 
 
+def to_utc(value: datetime) -> datetime:
+    """タイムゾーンを UTC に揃える。naive な日時は UTC とみなす。
+
+    DB には ISO 文字列で保存し、期間フィルタも並び替えも文字列比較で行うため、
+    保存前に必ず同じタイムゾーンへ正規化しておく必要がある。
+    """
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 class WeightEntry(BaseModel):
     """1回分の体重記録。"""
 
@@ -34,6 +45,11 @@ class WeightEntry(BaseModel):
     body_fat_percentage: Optional[float] = Field(default=None, ge=0, le=100)
     note: Optional[str] = None
 
+    @field_validator("timestamp")
+    @classmethod
+    def _normalize_timestamp(cls, value: datetime) -> datetime:
+        return to_utc(value)
+
 
 class WeightEntryCreate(BaseModel):
     """POST /api/weight のリクエストボディ。timestamp は省略時に現在時刻。"""
@@ -42,6 +58,11 @@ class WeightEntryCreate(BaseModel):
     weight_kg: float = Field(gt=0, le=500)
     body_fat_percentage: Optional[float] = Field(default=None, ge=0, le=100)
     note: Optional[str] = None
+
+    @field_validator("timestamp")
+    @classmethod
+    def _normalize_timestamp(cls, value: Optional[datetime]) -> Optional[datetime]:
+        return to_utc(value) if value else value
 
 
 async def init_database():

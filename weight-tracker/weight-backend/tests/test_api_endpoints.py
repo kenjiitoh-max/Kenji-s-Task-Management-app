@@ -33,6 +33,16 @@ def test_get_weight_with_time_scale(client: TestClient):
     assert body["entries"][0]["weight_kg"] == 68.4
 
 
+def test_entries_with_mixed_offsets_are_ordered_by_real_time(client: TestClient):
+    # 実時刻は 2026-08-29T15:00Z（後） と 2026-08-29T12:00Z（先）
+    client.post("/api/weight", json={"weight_kg": 70.0, "timestamp": "2026-08-30T00:00:00+09:00"})
+    client.post("/api/weight", json={"weight_kg": 71.0, "timestamp": "2026-08-29T07:00:00-05:00"})
+
+    entries = client.get("/api/weight").json()["entries"]
+    assert [e["weight_kg"] for e in entries] == [71.0, 70.0]
+    assert client.get("/api/status").json()["latest_weight_kg"] == 70.0
+
+
 def test_post_weight_validation_error(client: TestClient):
     assert client.post("/api/weight", json={"weight_kg": -5}).status_code == 422
 
