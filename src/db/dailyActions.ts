@@ -37,21 +37,23 @@ export function toggleDailyAction(db: Db, id: number): boolean {
   if (!current) return false;
   const completed = !Boolean(current.is_completed);
   const now = localTimestamp();
-  db.runSync(
-    'UPDATE daily_actions SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?',
-    completed ? 1 : 0,
-    completed ? now : null,
-    now,
-    id,
-  );
-  if (completed) {
-    db.runSync('INSERT INTO completion_log (category_id, action_id, completed_at) VALUES (?, ?, ?)', current.category_id, id, now);
-  } else {
+  db.withTransactionSync(() => {
     db.runSync(
-      'DELETE FROM completion_log WHERE id = (SELECT id FROM completion_log WHERE action_id = ? ORDER BY id DESC LIMIT 1)',
+      'UPDATE daily_actions SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?',
+      completed ? 1 : 0,
+      completed ? now : null,
+      now,
       id,
     );
-  }
+    if (completed) {
+      db.runSync('INSERT INTO completion_log (category_id, action_id, completed_at) VALUES (?, ?, ?)', current.category_id, id, now);
+    } else {
+      db.runSync(
+        'DELETE FROM completion_log WHERE id = (SELECT id FROM completion_log WHERE action_id = ? ORDER BY id DESC LIMIT 1)',
+        id,
+      );
+    }
+  });
   return completed;
 }
 
