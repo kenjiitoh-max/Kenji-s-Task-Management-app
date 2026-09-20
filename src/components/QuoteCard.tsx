@@ -13,11 +13,11 @@ export function QuoteCard({ quote, dark, favorite, onPress, onToggleFavorite }: 
 }) {
   const palette = getPalette(dark ? 'dark' : 'light');
   return (
-    <Pressable onPress={onPress} style={[styles.card, { backgroundColor: dark ? '#3A3248' : '#F1E9FA' }, shadow]}>
+    <Pressable onPress={onPress} style={[styles.card, { backgroundColor: dark ? '#3A2B52' : '#F3ECFA' }, shadow]}>
       <View style={styles.header}>
         <Text style={[styles.kicker, { color: palette.muted }]}>今日の言葉</Text>
         <Pressable accessibilityLabel={favorite ? 'お気に入りから削除' : 'お気に入りに追加'} onPress={onToggleFavorite} style={styles.heart}>
-          <Ionicons name={favorite ? 'heart' : 'heart-outline'} size={22} color={favorite ? '#D97893' : palette.muted} />
+          <Ionicons name={favorite ? 'heart' : 'heart-outline'} size={22} color={favorite ? palette.gold : palette.muted} />
         </Pressable>
       </View>
       <Text style={[styles.text, { color: palette.text }]}>{quote.textJa}</Text>

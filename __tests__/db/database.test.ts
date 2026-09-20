@@ -10,7 +10,7 @@ describe('database and categories', () => {
     seedCategories(db);
     expect(listCategories(db)).toHaveLength(3);
     expect(listCategories(db).map((category) => category.name)).toEqual(['体重管理', '英語', 'Devin']);
-    expect(listCategories(db).map((category) => category.color)).toEqual(['#F8B7A8', '#A9C9F5', '#C9B8F0']);
+    expect(listCategories(db).map((category) => category.color)).toEqual(['#D4A537', '#8B5FC7', '#B08BE0']);
   });
 
   it('recolors legacy seed colors during initialization', () => {
@@ -19,7 +19,7 @@ describe('database and categories', () => {
     db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', '体重管理', '#F97362', '2026-01-01T00:00:00');
     db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', 'Other', '#F97362', '2026-01-01T00:00:00');
     initDatabase(db);
-    expect(listCategories(db).find((category) => category.name === '体重管理')?.color).toBe('#F8B7A8');
+    expect(listCategories(db).find((category) => category.name === '体重管理')?.color).toBe('#D4A537');
     expect(listCategories(db).find((category) => category.name === 'Other')?.color).toBe('#F97362');
   });
 

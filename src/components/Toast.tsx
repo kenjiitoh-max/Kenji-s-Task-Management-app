@@ -15,5 +15,5 @@ export function Toast({ message, visible }: { message: string; visible: boolean 
 
 const styles = StyleSheet.create({
   text: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  toast: { backgroundColor: '#3D3A4AEE', borderRadius: 22, bottom: 36, left: 24, paddingHorizontal: 18, paddingVertical: 12, position: 'absolute', right: 24 },
+  toast: { backgroundColor: '#2B1B45EE', borderRadius: 22, bottom: 36, left: 24, paddingHorizontal: 18, paddingVertical: 12, position: 'absolute', right: 24 },
 });

@@ -71,6 +71,23 @@ const legacySeedColors: [string, string, string][] = [
   ['英語', '#3B82F6', '#A9C9F5'],
   ['Devin', '#8B5CF6', '#C9B8F0'],
 ];
+const pastelSeedColors: [string, string, string][] = [
+  ['体重管理', '#F8B7A8', '#D4A537'],
+  ['英語', '#A9C9F5', '#8B5FC7'],
+  ['Devin', '#C9B8F0', '#B08BE0'],
+];
+
+function migrateSeedColors(db: Db, key: string, mapping: [string, string, string][]): void {
+  const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
+  if (done?.value === '1') return;
+  for (const [name, fromColor, toColor] of mapping) {
+    db.runSync('UPDATE categories SET color = ? WHERE color = ? AND name = ?', toColor, fromColor, name);
+  }
+  db.runSync(
+    "INSERT INTO settings (key, value) VALUES (?, '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+    key,
+  );
+}
 
 function migrateCategoryKind(db: Db): void {
   const columns = db.getAllSync<{ name: string }>('PRAGMA table_info(categories)');
@@ -80,16 +97,8 @@ function migrateCategoryKind(db: Db): void {
   for (const [name, kind] of Object.entries(defaultKinds)) {
     db.runSync('UPDATE categories SET kind = ? WHERE kind IS NULL AND name = ?', kind, name);
   }
-  const colorMigration = db.getFirstSync<{ value: string }>(
-    "SELECT value FROM settings WHERE key = 'seed_colors_migrated'",
-  );
-  if (colorMigration?.value === '1') return;
-  for (const [name, legacyColor, pastelColor] of legacySeedColors) {
-    db.runSync('UPDATE categories SET color = ? WHERE color = ? AND name = ?', pastelColor, legacyColor, name);
-  }
-  db.runSync(
-    "INSERT INTO settings (key, value) VALUES ('seed_colors_migrated', '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-  );
+  migrateSeedColors(db, 'seed_colors_migrated', legacySeedColors);
+  migrateSeedColors(db, 'seed_colors_migrated_v2', pastelSeedColors);
 }
 
 export function seedCategories(db: Db): void {
@@ -97,9 +106,9 @@ export function seedCategories(db: Db): void {
   if (!count || count.count > 0) return;
   const now = localTimestamp();
   const seeds: [string, string, CategoryKind][] = [
-    ['体重管理', '#F8B7A8', 'weight'],
-    ['英語', '#A9C9F5', 'bird'],
-    ['Devin', '#C9B8F0', 'engineer'],
+    ['体重管理', '#D4A537', 'weight'],
+    ['英語', '#8B5FC7', 'bird'],
+    ['Devin', '#B08BE0', 'engineer'],
   ];
   for (const [name, color, kind] of seeds) {
     db.runSync('INSERT INTO categories (name, color, kind, created_at) VALUES (?, ?, ?, ?)', name, color, kind, now);

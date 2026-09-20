@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     right: 22,
-    shadowColor: '#6D5C7A',
+    shadowColor: '#4A2D78',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.18,
     shadowRadius: 5,
