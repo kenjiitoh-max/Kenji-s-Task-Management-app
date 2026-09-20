@@ -77,6 +77,28 @@ const pastelSeedColors: [string, string, string][] = [
   ['Devin', '#C9B8F0', '#B08BE0'],
 ];
 
+const extraSeedCategories: [string, string][] = [
+  ['読書', '#9F7AEA'],
+  ['筋トレ', '#E2C069'],
+];
+export const categoryEmojis: Record<string, string> = { 読書: '📚', 筋トレ: '💪' };
+
+function addMissingCategories(db: Db, key: string, seeds: [string, string][]): void {
+  const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
+  if (done?.value === '1') return;
+  const count = db.getFirstSync<{ count: number }>('SELECT COUNT(*) AS count FROM categories');
+  if (!count || count.count === 0) return;
+  const now = localTimestamp();
+  for (const [name, color] of seeds) {
+    const exists = db.getFirstSync<{ id: number }>('SELECT id FROM categories WHERE name = ?', name);
+    if (!exists) db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', name, color, now);
+  }
+  db.runSync(
+    "INSERT INTO settings (key, value) VALUES (?, '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+    key,
+  );
+}
+
 function migrateSeedColors(db: Db, key: string, mapping: [string, string, string][]): void {
   const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
   if (done?.value === '1') return;
@@ -99,6 +121,7 @@ function migrateCategoryKind(db: Db): void {
   }
   migrateSeedColors(db, 'seed_colors_migrated', legacySeedColors);
   migrateSeedColors(db, 'seed_colors_migrated_v2', pastelSeedColors);
+  addMissingCategories(db, 'seed_categories_v2', extraSeedCategories);
 }
 
 export function seedCategories(db: Db): void {
@@ -112,5 +135,8 @@ export function seedCategories(db: Db): void {
   ];
   for (const [name, color, kind] of seeds) {
     db.runSync('INSERT INTO categories (name, color, kind, created_at) VALUES (?, ?, ?, ?)', name, color, kind, now);
+  }
+  for (const [name, color] of extraSeedCategories) {
+    db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', name, color, now);
   }
 }

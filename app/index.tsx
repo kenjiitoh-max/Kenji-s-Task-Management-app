@@ -9,7 +9,7 @@ import { QuoteCard } from '../src/components/QuoteCard';
 import { createCategory, getCategoryProgress, listCategories } from '../src/db/categories';
 import { countCompletions, ensureDailyReset } from '../src/db/dailyActions';
 import { getLatestBodyRecord, getBodyProfile } from '../src/db/bodyRecords';
-import { getDb } from '../src/db/database';
+import { categoryEmojis, getDb } from '../src/db/database';
 import { listFavoriteIds, toggleFavorite } from '../src/db/quoteFavorites';
 import { getBodyStatus } from '../src/body/bodyMetrics';
 import { getLevelState } from '../src/growth/levels';
@@ -47,7 +47,7 @@ export default function HomeScreen() {
         const state = getLevelState(item.kind, countCompletions(db, item.id));
         return [item.id, { subtitle: `Lv.${state.level} ${state.stage.name}`, emoji: state.stage.emoji }];
       }
-      return [item.id, {}];
+      return [item.id, { emoji: categoryEmojis[item.name] }];
     })));
   }, []);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
