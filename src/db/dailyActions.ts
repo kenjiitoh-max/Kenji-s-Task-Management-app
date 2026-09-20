@@ -66,6 +66,13 @@ export function countCompletions(db: Db, categoryId: number): number {
   return row?.count ?? 0;
 }
 
+export function listCompletionDates(db: Db, categoryId: number): string[] {
+  return db.getAllSync<{ completed_at: string }>(
+    'SELECT completed_at FROM completion_log WHERE category_id = ? ORDER BY completed_at ASC, id ASC',
+    categoryId,
+  ).map((row) => row.completed_at);
+}
+
 export function resetStaleCompletions(db: Db): void {
   const date = `${localDate()}%`;
   db.runSync(
