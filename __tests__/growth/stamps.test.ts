@@ -1,4 +1,4 @@
-import { earnedMilestones, hasStamp, longestStreak, milestoneFor, nextMilestone, stampDays } from '../../src/growth/stamps';
+import { earnedMilestones, hasStamp, longestStreak, milestoneFor, nextMilestone, stampDays, stampTier, streakEndingAt } from '../../src/growth/stamps';
 
 describe('stamps', () => {
   const today = '2026-10-05';
@@ -43,7 +43,24 @@ describe('stamps', () => {
 
   it('earnedMilestones returns all milestones up to the longest streak', () => {
     const streak = ['2026-10-01T10:00:00', '2026-10-02T10:00:00', '2026-10-03T10:00:00'];
-    expect(earnedMilestones(streak, today).map((m) => m.days)).toEqual([1, 3]);
-    expect(earnedMilestones([], today)).toEqual([]);
+    expect(earnedMilestones(streak).map((m) => m.days)).toEqual([1, 3]);
+    expect(earnedMilestones([])).toEqual([]);
+  });
+
+  it('streakEndingAt counts the run ending on that day', () => {
+    const history = ['2026-10-01T10:00:00', '2026-10-02T10:00:00', '2026-10-04T10:00:00', '2026-10-05T10:00:00', '2026-10-06T10:00:00'];
+    expect(streakEndingAt(history, '2026-10-02')).toBe(2);
+    expect(streakEndingAt(history, '2026-10-06')).toBe(3);
+    expect(streakEndingAt(history, '2026-10-03')).toBe(0);
+  });
+
+  it('stampTier maps streaks to tiers', () => {
+    expect(stampTier(0)).toBe('bronze');
+    expect(stampTier(2)).toBe('bronze');
+    expect(stampTier(3)).toBe('silver');
+    expect(stampTier(6)).toBe('silver');
+    expect(stampTier(7)).toBe('gold');
+    expect(stampTier(29)).toBe('gold');
+    expect(stampTier(30)).toBe('diamond');
   });
 });

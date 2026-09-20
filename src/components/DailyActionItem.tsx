@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { DailyAction } from '../db/types';
 import { getPalette, radius, shadow } from '../theme';
 
-export function DailyActionItem({ action, dark, accent, onToggle, onDelete }: { action: DailyAction; dark: boolean; accent: string; onToggle: () => void; onDelete: () => void }) {
+export function DailyActionItem({ action, dark, accent, streak, onToggle, onDelete }: { action: DailyAction; dark: boolean; accent: string; streak?: number; onToggle: () => void; onDelete: () => void }) {
   const scale = useSharedValue(1);
   useEffect(() => { if (action.is_completed) scale.value = withSequence(withSpring(1.3), withSpring(1)); }, [action.is_completed, scale]);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
@@ -18,6 +18,7 @@ export function DailyActionItem({ action, dark, accent, onToggle, onDelete }: { 
         </Animated.View>
       </Pressable>
       <Text style={[styles.title, { color: action.is_completed ? palette.muted : palette.text, textDecorationLine: action.is_completed ? 'line-through' : 'none' }]}>{action.title}</Text>
+      {streak && streak > 0 ? <Text style={[styles.streak, { color: palette.muted }]}>🔥{streak}</Text> : null}
       <Pressable accessibilityLabel="削除" onPress={onDelete} style={styles.delete}><Ionicons name="trash-outline" size={20} color={palette.muted} /></Pressable>
     </View>
   );
@@ -28,5 +29,6 @@ const styles = StyleSheet.create({
   checkPress: { padding: 4 },
   delete: { padding: 6 },
   row: { alignItems: 'center', borderRadius: radius.card, flexDirection: 'row', marginBottom: 10, paddingHorizontal: 12, paddingVertical: 11 },
+  streak: { fontSize: 12, marginRight: 4 },
   title: { flex: 1, fontSize: 15, marginHorizontal: 9 },
 });

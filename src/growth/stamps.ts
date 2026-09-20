@@ -33,6 +33,27 @@ export function nextMilestone(streak: number): Milestone | null {
   return MILESTONES.find((milestone) => milestone.days > streak) ?? null;
 }
 
+export type StampTier = 'bronze' | 'silver' | 'gold' | 'diamond';
+
+export function stampTier(streak: number): StampTier {
+  if (streak < 3) return 'bronze';
+  if (streak < 7) return 'silver';
+  if (streak < 30) return 'gold';
+  return 'diamond';
+}
+
+export function streakEndingAt(dates: string[], date: string): number {
+  if (!hasStamp(dates, date)) return 0;
+  const days = new Set(dates.map((timestamp) => timestamp.slice(0, 10)));
+  let streak = 0;
+  let day = date;
+  while (days.has(day)) {
+    streak += 1;
+    day = shiftDate(day, -1);
+  }
+  return streak;
+}
+
 export function longestStreak(dates: string[]): number {
   const days = [...new Set(dates.map((timestamp) => timestamp.slice(0, 10)))].sort();
   let best = 0;
@@ -46,7 +67,7 @@ export function longestStreak(dates: string[]): number {
   return best;
 }
 
-export function earnedMilestones(dates: string[], today: string): Milestone[] {
+export function earnedMilestones(dates: string[]): Milestone[] {
   const streak = longestStreak(dates);
   return MILESTONES.filter((milestone) => milestone.days <= streak);
 }
