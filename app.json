@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      ["@kingstinct/react-native-healthkit", { "NSHealthShareUsageDescription": "体重・体脂肪をヘルスケアから読み取り、体重管理カテゴリに記録します", "NSHealthUpdateUsageDescription": "このアプリはヘルスケアへの書き込みは行いません" }]
     ],
     "ios": {
       "supportsTablet": true,

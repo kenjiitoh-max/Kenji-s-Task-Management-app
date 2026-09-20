@@ -23,7 +23,7 @@ import { applyActionTemplate, createActionTemplate, deleteActionTemplate, listAc
 import { getCategory, getCategoryProgress } from '../../src/db/categories';
 import { getDb } from '../../src/db/database';
 import { countCompletions, createDailyAction, deleteDailyAction, ensureDailyReset, listActionStreaks, listCompletionDates, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
-import { getBodyProfile, getLatestBodyRecord, listBodyRecords, saveBodyProfile, upsertBodyRecord } from '../../src/db/bodyRecords';
+import { getBodyProfile, getLatestBodyRecord, importBodyRecords, isHealthSyncEnabled, listBodyRecords, saveBodyProfile, setHealthSyncEnabled, upsertBodyRecord } from '../../src/db/bodyRecords';
 import { localDate } from '../../src/db/time';
 import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
@@ -32,6 +32,7 @@ import { addWorkoutSet, deleteWorkoutSet, ExerciseBest, getExerciseBest, getLast
 import { currentStreak } from '../../src/growth/history';
 import { getLevelState, isLineage } from '../../src/growth/levels';
 import { hasStamp, milestoneFor } from '../../src/growth/stamps';
+import { fetchBodyRecords, healthKitSupported, requestBodyPermissions } from '../../src/health/healthkit';
 import { randomQuote } from '../../src/quotes/dailyQuote';
 import { getPalette } from '../../src/theme';
 
@@ -65,6 +66,7 @@ export default function CategoryScreen() {
   const [stampPulse, setStampPulse] = useState(0);
   const [templates, setTemplates] = useState<ActionTemplate[]>([]);
   const [actionStreaks, setActionStreaks] = useState<{ id: number; title: string; streak: number }[]>([]);
+  const [importingHealth, setImportingHealth] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
   const dismissReward = useCallback(() => setReward(null), []);
   const celebration = useCelebration();
@@ -88,7 +90,17 @@ export default function CategoryScreen() {
       setRecent(recentExercises(db, categoryId));
     }
   }, [categoryId]);
-  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+  useFocusEffect(useCallback(() => {
+    refresh();
+    const db = getDb();
+    const current = getCategory(db, categoryId);
+    if (current?.kind === 'weight' && healthKitSupported && isHealthSyncEnabled(db)) {
+      fetchBodyRecords(30).then((samples) => {
+        if (samples.length) importBodyRecords(db, samples);
+        refresh();
+      }).catch(() => {});
+    }
+  }, [refresh, categoryId]));
   useEffect(() => subscribe(refresh), [refresh]);
   if (!category) return null;
   const goalFor = (term: GoalTerm) => goals.find((goal) => goal.term === term);
@@ -111,6 +123,27 @@ export default function CategoryScreen() {
     }
     const message = levelMessage ?? (record ? `自己ベスト更新！ ${set.exercise} ${set.weight_kg}kg` : firstOfDay ? '今日のトレ開始！ +10 XP' : undefined);
     if (message) celebration.celebrate(false, message);
+  };
+  const importHealth = async () => {
+    if (importingHealth) return;
+    setImportingHealth(true);
+    try {
+      const granted = await requestBodyPermissions();
+      if (!granted) {
+        Alert.alert('ヘルスケア', 'ヘルスケアの許可が必要です（設定 > ヘルスケア）');
+        return;
+      }
+      const samples = await fetchBodyRecords(90);
+      const db = getDb();
+      const n = importBodyRecords(db, samples);
+      setHealthSyncEnabled(db, true);
+      refresh();
+      celebration.celebrate(false, n > 0 ? `ヘルスケアから${n}日分を取り込みました` : '新しいデータはありませんでした');
+    } catch {
+      celebration.celebrate(false, '取り込みに失敗しました');
+    } finally {
+      setImportingHealth(false);
+    }
   };
   const toggle = (action: DailyAction) => {
     const db = getDb();
@@ -163,7 +196,7 @@ export default function CategoryScreen() {
         keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={
           <View>
-            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
+            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} importing={importingHealth} latest={latest} onEditProfile={() => setProfileModal(true)} onImportHealth={healthKitSupported ? importHealth : undefined} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
             {category.kind === 'reader' ? <BookshelfCard accent={category.color} categoryId={categoryId} dark={dark} onPress={() => router.push(`/books/${id}`)} /> : null}
             {category.kind === 'athlete' ? <WorkoutCard accent={category.color} bests={bests} dark={dark} onDelete={(set) => Alert.alert('削除', `${set.exercise} の記録を削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteWorkoutSet(getDb(), set.id); refresh(); } }])} onLog={() => setWorkoutModal(true)} today={todaySets} /> : null}
             <StampCard accent={category.color} dark={dark} dates={stampDates} kind={category.kind} pulseKey={stampPulse} today={localDate()} />
