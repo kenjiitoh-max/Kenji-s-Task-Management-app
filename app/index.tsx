@@ -32,9 +32,10 @@ export default function HomeScreen() {
     const profile = getBodyProfile(db);
     const latest = getLatestBodyRecord(db);
     setSubtitles(Object.fromEntries(items.map((item) => {
-      if (item.kind === 'weight' && latest) {
+      if (item.kind === 'weight') {
+        if (!latest) return [item.id, { subtitle: profile.height_cm ? '今日の体重を記録しよう' : '身長を設定して始めよう', emoji: '⚖️' }];
         const status = profile.height_cm ? getBodyStatus(latest.weight_kg, latest.body_fat_pct, profile.height_cm, profile.sex) : null;
-        return [item.id, { subtitle: `${latest.weight_kg.toFixed(1)} kg${status ? ` · ${status.bmiStage.label}` : ''}`, emoji: status?.bmiStage.emoji }];
+        return [item.id, { subtitle: `${latest.weight_kg.toFixed(1)} kg${status ? ` · ${status.bmiStage.label}` : ''}`, emoji: status?.bmiStage.emoji || '⚖️' }];
       }
       if (item.kind === 'bird' || item.kind === 'engineer') {
         const state = getLevelState(item.kind, countCompletions(db, item.id));
