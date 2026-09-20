@@ -1,3 +1,4 @@
+import { ImportedBodyRecord } from '../health/bodySamples';
 import { Db } from './Db';
 import { localTimestamp } from './time';
 import { BodyProfile, BodyRecord, Sex } from './types';
@@ -28,6 +29,35 @@ export function upsertBodyRecord(db: Db, date: string, weightKg: number, bodyFat
     localTimestamp(),
   );
   return result?.id ?? 0;
+}
+
+export function importBodyRecords(db: Db, records: ImportedBodyRecord[]): number {
+  for (const record of records) {
+    db.runSync(
+      `INSERT INTO body_records (date, weight_kg, body_fat_pct, created_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(date) DO UPDATE SET
+         weight_kg = excluded.weight_kg,
+         body_fat_pct = COALESCE(excluded.body_fat_pct, body_records.body_fat_pct)`,
+      record.date,
+      record.weightKg,
+      record.bodyFatPct,
+      localTimestamp(),
+    );
+  }
+  return records.length;
+}
+
+export function isHealthSyncEnabled(db: Db): boolean {
+  return db.getFirstSync<{ value: string }>("SELECT value FROM settings WHERE key = 'healthkit_sync'")?.value === '1';
+}
+
+export function setHealthSyncEnabled(db: Db, enabled: boolean): void {
+  db.runSync(
+    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    'healthkit_sync',
+    enabled ? '1' : '0',
+  );
 }
 
 export function deleteBodyRecord(db: Db, id: number): void {
