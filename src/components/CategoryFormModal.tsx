@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { getPalette } from '../theme';
+import { getPalette, pastelColors } from '../theme';
 import { ModalShell } from './ModalShell';
-
-const colors = ['#F97362', '#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899'];
 
 export function CategoryFormModal({ visible, dark, onClose, onSave }: { visible: boolean; dark: boolean; onClose: () => void; onSave: (name: string, color: string) => void }) {
   const palette = getPalette(dark ? 'dark' : 'light');
   const [name, setName] = useState('');
-  const [color, setColor] = useState(colors[0]);
+  const [color, setColor] = useState(pastelColors[0]);
   const save = () => { if (name.trim()) { onSave(name.trim(), color); setName(''); onClose(); } };
   return (
     <ModalShell dark={dark} onClose={onClose} title="カテゴリーを追加" visible={visible}>
       <TextInput autoFocus onChangeText={setName} placeholder="カテゴリー名" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={name} />
       <Text style={[styles.label, { color: palette.muted }]}>アクセントカラー</Text>
-      <View style={styles.colors}>{colors.map((item) => <Pressable key={item} onPress={() => setColor(item)} style={[styles.color, { backgroundColor: item }, color === item && styles.selected]} />)}</View>
+      <View style={styles.colors}>{pastelColors.map((item) => <Pressable key={item} onPress={() => setColor(item)} style={[styles.color, { backgroundColor: item }, color === item && styles.selected]} />)}</View>
       <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={styles.saveText}>追加する</Text></Pressable>
     </ModalShell>
   );

@@ -1,6 +1,7 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { Db } from './Db';
 import { localTimestamp } from './time';
+import { CategoryKind } from './types';
 
 let database: SQLiteDatabase | null = null;
 
@@ -39,19 +40,57 @@ export function initDatabase(db: Db): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS body_records (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL UNIQUE,
+      weight_kg REAL NOT NULL,
+      body_fat_pct REAL,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS completion_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      action_id INTEGER,
+      completed_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS quote_favorites (
+      quote_id TEXT PRIMARY KEY,
+      created_at TEXT NOT NULL
+    );
   `);
+  migrateCategoryKind(db);
+}
+
+const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer' };
+const legacySeedColors: Record<string, string> = { '#F97362': '#F8B7A8', '#3B82F6': '#A9C9F5', '#8B5CF6': '#C9B8F0' };
+
+function migrateCategoryKind(db: Db): void {
+  const columns = db.getAllSync<{ name: string }>('PRAGMA table_info(categories)');
+  if (!columns.some((column) => column.name === 'kind')) {
+    db.execSync('ALTER TABLE categories ADD COLUMN kind TEXT');
+  }
+  for (const [name, kind] of Object.entries(defaultKinds)) {
+    db.runSync('UPDATE categories SET kind = ? WHERE kind IS NULL AND name = ?', kind, name);
+  }
+  for (const [legacyColor, pastelColor] of Object.entries(legacySeedColors)) {
+    db.runSync('UPDATE categories SET color = ? WHERE color = ?', pastelColor, legacyColor);
+  }
 }
 
 export function seedCategories(db: Db): void {
   const count = db.getFirstSync<{ count: number }>('SELECT COUNT(*) AS count FROM categories');
   if (!count || count.count > 0) return;
   const now = localTimestamp();
-  const seeds = [
-    ['体重管理', '#F97362'],
-    ['英語', '#3B82F6'],
-    ['Devin', '#8B5CF6'],
+  const seeds: [string, string, CategoryKind][] = [
+    ['体重管理', '#F8B7A8', 'weight'],
+    ['英語', '#A9C9F5', 'bird'],
+    ['Devin', '#C9B8F0', 'engineer'],
   ];
-  for (const [name, color] of seeds) {
-    db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', name, color, now);
+  for (const [name, color, kind] of seeds) {
+    db.runSync('INSERT INTO categories (name, color, kind, created_at) VALUES (?, ?, ?, ?)', name, color, kind, now);
   }
 }

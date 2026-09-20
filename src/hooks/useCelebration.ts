@@ -15,14 +15,14 @@ export function useCelebration() {
       hideTimer.current = null;
     }
   }, []);
-  const celebrate = useCallback((allComplete: boolean) => {
+  const celebrate = useCallback((allComplete: boolean, message?: string) => {
     if (hideTimer.current) {
       clearTimeout(hideTimer.current);
       hideTimer.current = null;
     }
     setCompleteAll(allComplete);
     setCelebrationId((id) => id + 1);
-    setToastMessage(allComplete ? '今日のアクション全達成！🎉' : messages[Math.floor(Math.random() * messages.length)]);
+    setToastMessage(allComplete ? '今日のアクション全達成！🎉' : message || messages[Math.floor(Math.random() * messages.length)]);
     setToastVisible(true);
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     hideTimer.current = setTimeout(() => {
