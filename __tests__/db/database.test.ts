@@ -8,9 +8,10 @@ describe('database and categories', () => {
     initDatabase(db);
     seedCategories(db);
     seedCategories(db);
-    expect(listCategories(db)).toHaveLength(3);
-    expect(listCategories(db).map((category) => category.name)).toEqual(['体重管理', '英語', 'Devin']);
-    expect(listCategories(db).map((category) => category.color)).toEqual(['#D4A537', '#8B5FC7', '#B08BE0']);
+    expect(listCategories(db)).toHaveLength(5);
+    expect(listCategories(db).map((category) => category.name)).toEqual(['体重管理', '英語', 'Devin', '読書', '筋トレ']);
+    expect(listCategories(db).map((category) => category.color)).toEqual(['#D4A537', '#8B5FC7', '#B08BE0', '#9F7AEA', '#E2C069']);
+    expect(listCategories(db).map((category) => category.kind)).toEqual(['weight', 'bird', 'engineer', 'reader', 'athlete']);
   });
 
   it('recolors legacy seed colors during initialization', () => {
@@ -21,6 +22,19 @@ describe('database and categories', () => {
     initDatabase(db);
     expect(listCategories(db).find((category) => category.name === '体重管理')?.color).toBe('#D4A537');
     expect(listCategories(db).find((category) => category.name === 'Other')?.color).toBe('#F97362');
+  });
+
+  it('adds 読書 and 筋トレ to an existing database once', () => {
+    const db = createTestDb();
+    db.execSync('CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, color TEXT NOT NULL, created_at TEXT NOT NULL)');
+    db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', '読書', '#123456', '2026-01-01T00:00:00');
+    initDatabase(db);
+    expect(listCategories(db).map((category) => category.name)).toEqual(['読書', '筋トレ']);
+    expect(listCategories(db).find((category) => category.name === '読書')?.color).toBe('#123456');
+    expect(listCategories(db).map((category) => category.kind)).toEqual(['reader', 'athlete']);
+    deleteCategory(db, listCategories(db).find((category) => category.name === '筋トレ')!.id);
+    initDatabase(db);
+    expect(listCategories(db).map((category) => category.name)).toEqual(['読書']);
   });
 
   it('creates, lists, and deletes categories', () => {

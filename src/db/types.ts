@@ -1,6 +1,6 @@
 export type GoalTerm = 'short' | 'medium' | 'long';
 
-export type CategoryKind = 'weight' | 'bird' | 'engineer';
+export type CategoryKind = 'weight' | 'bird' | 'engineer' | 'reader' | 'athlete';
 
 export interface Category {
   id: number;

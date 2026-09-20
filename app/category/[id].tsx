@@ -22,7 +22,7 @@ import { localDate } from '../../src/db/time';
 import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
 import { BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
-import { getLevelState } from '../../src/growth/levels';
+import { getLevelState, isLineage } from '../../src/growth/levels';
 import { randomQuote } from '../../src/quotes/dailyQuote';
 import { getPalette } from '../../src/theme';
 
@@ -59,7 +59,7 @@ export default function CategoryScreen() {
     setRecords(listBodyRecords(db, 7));
     setProfile(getBodyProfile(db));
     const current = getCategory(db, categoryId);
-    setCompletions(current?.kind === 'bird' || current?.kind === 'engineer' ? countCompletions(db, categoryId) : 0);
+    setCompletions(isLineage(current?.kind) ? countCompletions(db, categoryId) : 0);
   }, [categoryId]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
   useEffect(() => subscribe(refresh), [refresh]);
@@ -67,9 +67,9 @@ export default function CategoryScreen() {
   const goalFor = (term: GoalTerm) => goals.find((goal) => goal.term === term);
   const toggle = (action: DailyAction) => {
     const db = getDb();
-    const before = category.kind === 'bird' || category.kind === 'engineer' ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
+    const before = isLineage(category.kind) ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
     const completed = toggleDailyAction(db, action.id);
-    const after = category.kind === 'bird' || category.kind === 'engineer' ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
+    const after = isLineage(category.kind) ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
     refresh();
     if (completed) {
       const progress = getCategoryProgress(db, categoryId);
@@ -95,7 +95,7 @@ export default function CategoryScreen() {
         keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={
           <View>
-            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : category.kind === 'bird' || category.kind === 'engineer' ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
+            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
             <Text style={[styles.section, { color: palette.text }]}>ゴール</Text>
             <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard dark={dark} goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
             <Text style={[styles.section, { color: palette.text }]}>今日のデイリーアクション</Text>

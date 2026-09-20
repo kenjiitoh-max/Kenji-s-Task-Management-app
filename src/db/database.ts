@@ -65,7 +65,7 @@ export function initDatabase(db: Db): void {
   migrateCategoryKind(db);
 }
 
-const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer' };
+const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer', 読書: 'reader', 筋トレ: 'athlete' };
 const legacySeedColors: [string, string, string][] = [
   ['体重管理', '#F97362', '#F8B7A8'],
   ['英語', '#3B82F6', '#A9C9F5'],
@@ -76,6 +76,27 @@ const pastelSeedColors: [string, string, string][] = [
   ['英語', '#A9C9F5', '#8B5FC7'],
   ['Devin', '#C9B8F0', '#B08BE0'],
 ];
+
+const extraSeedCategories: [string, string, CategoryKind][] = [
+  ['読書', '#9F7AEA', 'reader'],
+  ['筋トレ', '#E2C069', 'athlete'],
+];
+
+function addMissingCategories(db: Db, key: string, seeds: [string, string, CategoryKind][]): void {
+  const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
+  if (done?.value === '1') return;
+  const count = db.getFirstSync<{ count: number }>('SELECT COUNT(*) AS count FROM categories');
+  if (!count || count.count === 0) return;
+  const now = localTimestamp();
+  for (const [name, color, kind] of seeds) {
+    const exists = db.getFirstSync<{ id: number }>('SELECT id FROM categories WHERE name = ?', name);
+    if (!exists) db.runSync('INSERT INTO categories (name, color, kind, created_at) VALUES (?, ?, ?, ?)', name, color, kind, now);
+  }
+  db.runSync(
+    "INSERT INTO settings (key, value) VALUES (?, '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+    key,
+  );
+}
 
 function migrateSeedColors(db: Db, key: string, mapping: [string, string, string][]): void {
   const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
@@ -99,6 +120,7 @@ function migrateCategoryKind(db: Db): void {
   }
   migrateSeedColors(db, 'seed_colors_migrated', legacySeedColors);
   migrateSeedColors(db, 'seed_colors_migrated_v2', pastelSeedColors);
+  addMissingCategories(db, 'seed_categories_v2', extraSeedCategories);
 }
 
 export function seedCategories(db: Db): void {
@@ -109,6 +131,7 @@ export function seedCategories(db: Db): void {
     ['体重管理', '#D4A537', 'weight'],
     ['英語', '#8B5FC7', 'bird'],
     ['Devin', '#B08BE0', 'engineer'],
+    ...extraSeedCategories,
   ];
   for (const [name, color, kind] of seeds) {
     db.runSync('INSERT INTO categories (name, color, kind, created_at) VALUES (?, ?, ?, ?)', name, color, kind, now);
