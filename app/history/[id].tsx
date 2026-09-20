@@ -12,7 +12,7 @@ import { localDate } from '../../src/db/time';
 import { Category, BodyRecord } from '../../src/db/types';
 import { getCategory } from '../../src/db/categories';
 import { currentStreak, dailyCompletionCounts, shiftDate, xpTrajectory } from '../../src/growth/history';
-import { Lineage, stageForLevel } from '../../src/growth/levels';
+import { isLineage, stageForLevel } from '../../src/growth/levels';
 import { getPalette, radius, shadow, textOn } from '../../src/theme';
 
 type Period = 30 | 90 | 'all';
@@ -61,7 +61,7 @@ export default function HistoryScreen() {
   const trajectory = xpTrajectory(completionDates);
   const weightPoints = periodRecords.map((record) => ({ x: record.date, y: record.weight_kg }));
   const fatPoints = periodRecords.filter((record) => record.body_fat_pct != null).map((record) => ({ x: record.date, y: record.body_fat_pct as number }));
-  const lineage = category.kind === 'weight' ? null : category.kind as Lineage;
+  const lineage = isLineage(category.kind) ? category.kind : null;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>

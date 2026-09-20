@@ -11,6 +11,7 @@ describe('database and categories', () => {
     expect(listCategories(db)).toHaveLength(5);
     expect(listCategories(db).map((category) => category.name)).toEqual(['体重管理', '英語', 'Devin', '読書', '筋トレ']);
     expect(listCategories(db).map((category) => category.color)).toEqual(['#D4A537', '#8B5FC7', '#B08BE0', '#9F7AEA', '#E2C069']);
+    expect(listCategories(db).map((category) => category.kind)).toEqual(['weight', 'bird', 'engineer', 'reader', 'athlete']);
   });
 
   it('recolors legacy seed colors during initialization', () => {
@@ -30,6 +31,7 @@ describe('database and categories', () => {
     initDatabase(db);
     expect(listCategories(db).map((category) => category.name)).toEqual(['読書', '筋トレ']);
     expect(listCategories(db).find((category) => category.name === '読書')?.color).toBe('#123456');
+    expect(listCategories(db).map((category) => category.kind)).toEqual(['reader', 'athlete']);
     deleteCategory(db, listCategories(db).find((category) => category.name === '筋トレ')!.id);
     initDatabase(db);
     expect(listCategories(db).map((category) => category.name)).toEqual(['読書']);

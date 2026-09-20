@@ -11,6 +11,10 @@ export interface CharacterStage {
 
 export type Lineage = Exclude<CategoryKind, 'weight'>;
 
+export function isLineage(kind: CategoryKind | null | undefined): kind is Lineage {
+  return kind != null && kind !== 'weight';
+}
+
 export const lineages: Record<Lineage, CharacterStage[]> = {
   bird: [
     { minLevel: 1, name: 'たまご', emoji: '🥚', flavor: '英語の旅はここから。まずは毎日ひとつ。' },
@@ -29,6 +33,24 @@ export const lineages: Record<Lineage, CharacterStage[]> = {
     { minLevel: 15, name: 'ハッカー', emoji: '🚀', flavor: 'Devinと組んで開発スピードが爆上がり。' },
     { minLevel: 20, name: 'シニア', emoji: '🧙', flavor: '設計もレビューもお任せ。チームの柱。' },
     { minLevel: 30, name: 'レジェンド', emoji: '👑', flavor: '作りたいものを何でも形にできる存在。' },
+  ],
+  reader: [
+    { minLevel: 1, name: 'しおり', emoji: '🔖', flavor: '最初の1ページを開いた。旅はここから。' },
+    { minLevel: 3, name: 'ひなフクロウ', emoji: '🐣', flavor: '毎日少しずつ。本を開くのが習慣になってきた。' },
+    { minLevel: 6, name: 'フクロウ', emoji: '🦉', flavor: '夕方の読書が一日の楽しみに。' },
+    { minLevel: 10, name: '本の虫', emoji: '📖', flavor: 'ジャンルを跨いで読めるようになった。' },
+    { minLevel: 15, name: '学者', emoji: '🎓', flavor: '読んだことを人に語れる。' },
+    { minLevel: 20, name: '賢者', emoji: '🧙', flavor: '本と本がつながり、自分の考えが生まれる。' },
+    { minLevel: 30, name: '図書館の主', emoji: '🏛️', flavor: '頭の中に図書館がある。何でも引き出せる。' },
+  ],
+  athlete: [
+    { minLevel: 1, name: 'もやし', emoji: '🌱', flavor: 'まずは体を動かす。たった1回から。' },
+    { minLevel: 3, name: 'ルーキー', emoji: '🤾', flavor: '筋肉痛が成長の証。続けるのが一番強い。' },
+    { minLevel: 6, name: 'トレーニー', emoji: '🏋️', flavor: 'フォームが固まって重量が上がってきた。' },
+    { minLevel: 10, name: 'ファイター', emoji: '🥊', flavor: '体が変わってきたのが鏡でわかる。' },
+    { minLevel: 15, name: 'アスリート', emoji: '🏃', flavor: '体力も気力も別次元に。' },
+    { minLevel: 20, name: 'マンバ', emoji: '🐍', flavor: '朝4時のトレーニングも苦じゃない。Mamba Mentality。' },
+    { minLevel: 30, name: 'レジェンド', emoji: '🏆', flavor: 'トレをしないと一日が始まらない。体は一生の相棒。' },
   ],
 };
 

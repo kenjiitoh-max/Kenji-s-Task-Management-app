@@ -9,10 +9,10 @@ import { QuoteCard } from '../src/components/QuoteCard';
 import { createCategory, getCategoryProgress, listCategories } from '../src/db/categories';
 import { countCompletions, ensureDailyReset } from '../src/db/dailyActions';
 import { getLatestBodyRecord, getBodyProfile } from '../src/db/bodyRecords';
-import { categoryEmojis, getDb } from '../src/db/database';
+import { getDb } from '../src/db/database';
 import { listFavoriteIds, toggleFavorite } from '../src/db/quoteFavorites';
 import { getBodyStatus } from '../src/body/bodyMetrics';
-import { getLevelState } from '../src/growth/levels';
+import { getLevelState, isLineage } from '../src/growth/levels';
 import { subscribe } from '../src/db/dailyResetEvents';
 import { Category } from '../src/db/types';
 import { getPalette } from '../src/theme';
@@ -43,11 +43,11 @@ export default function HomeScreen() {
         const status = profile.height_cm ? getBodyStatus(latest.weight_kg, latest.body_fat_pct, profile.height_cm, profile.sex) : null;
         return [item.id, { subtitle: `${latest.weight_kg.toFixed(1)} kg${status ? ` · ${status.bmiStage.label}` : ''}`, emoji: status?.bmiStage.emoji || '⚖️' }];
       }
-      if (item.kind === 'bird' || item.kind === 'engineer') {
+      if (isLineage(item.kind)) {
         const state = getLevelState(item.kind, countCompletions(db, item.id));
         return [item.id, { subtitle: `Lv.${state.level} ${state.stage.name}`, emoji: state.stage.emoji }];
       }
-      return [item.id, { emoji: categoryEmojis[item.name] }];
+      return [item.id, {}];
     })));
   }, []);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
