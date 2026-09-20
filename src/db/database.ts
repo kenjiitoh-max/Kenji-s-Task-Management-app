@@ -66,7 +66,11 @@ export function initDatabase(db: Db): void {
 }
 
 const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer' };
-const legacySeedColors: Record<string, string> = { '#F97362': '#F8B7A8', '#3B82F6': '#A9C9F5', '#8B5CF6': '#C9B8F0' };
+const legacySeedColors: [string, string, string][] = [
+  ['体重管理', '#F97362', '#F8B7A8'],
+  ['英語', '#3B82F6', '#A9C9F5'],
+  ['Devin', '#8B5CF6', '#C9B8F0'],
+];
 
 function migrateCategoryKind(db: Db): void {
   const columns = db.getAllSync<{ name: string }>('PRAGMA table_info(categories)');
@@ -76,9 +80,16 @@ function migrateCategoryKind(db: Db): void {
   for (const [name, kind] of Object.entries(defaultKinds)) {
     db.runSync('UPDATE categories SET kind = ? WHERE kind IS NULL AND name = ?', kind, name);
   }
-  for (const [legacyColor, pastelColor] of Object.entries(legacySeedColors)) {
-    db.runSync('UPDATE categories SET color = ? WHERE color = ?', pastelColor, legacyColor);
+  const colorMigration = db.getFirstSync<{ value: string }>(
+    "SELECT value FROM settings WHERE key = 'seed_colors_migrated'",
+  );
+  if (colorMigration?.value === '1') return;
+  for (const [name, legacyColor, pastelColor] of legacySeedColors) {
+    db.runSync('UPDATE categories SET color = ? WHERE color = ? AND name = ?', pastelColor, legacyColor, name);
   }
+  db.runSync(
+    "INSERT INTO settings (key, value) VALUES ('seed_colors_migrated', '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+  );
 }
 
 export function seedCategories(db: Db): void {

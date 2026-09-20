@@ -27,6 +27,7 @@ export default function QuotesScreen() {
   const dark = useColorScheme() === 'dark';
   const palette = getPalette(dark ? 'dark' : 'light');
   const listRef = useRef<FlatList<Quote>>(null);
+  const hasRetriedScrollRef = useRef(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(id || null);
@@ -39,6 +40,7 @@ export default function QuotesScreen() {
     const index = filteredQuotes.findIndex((quote) => quote.id === id);
     if (index >= 0) {
       setExpandedId(id);
+      hasRetriedScrollRef.current = false;
       const timer = setTimeout(() => listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.2 }), 100);
       return () => clearTimeout(timer);
     }
@@ -60,7 +62,11 @@ export default function QuotesScreen() {
         keyExtractor={(quote) => quote.id}
         ListHeaderComponent={<FlatList horizontal contentContainerStyle={styles.filterContent} data={filters} keyExtractor={(item) => item.key} renderItem={({ item }) => <Pressable onPress={() => setFilter(item.key)} style={[styles.filter, { backgroundColor: filter === item.key ? palette.primary : palette.card }]}><Text style={{ color: filter === item.key ? '#fff' : palette.muted, fontSize: 12, fontWeight: '700' }}>{item.label}</Text></Pressable>} showsHorizontalScrollIndicator={false} />}
         ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>お気に入りの言葉はまだありません。</Text>}
-        onScrollToIndexFailed={({ index }) => { setTimeout(() => listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.2 }), 100); }}
+        onScrollToIndexFailed={({ index, averageItemLength }) => {
+          if (hasRetriedScrollRef.current) return;
+          hasRetriedScrollRef.current = true;
+          setTimeout(() => listRef.current?.scrollToOffset({ offset: averageItemLength * index, animated: true }), 100);
+        }}
         renderItem={({ item }) => <Pressable onPress={() => setExpandedId(expandedId === item.id ? null : item.id)} style={[styles.quote, { backgroundColor: palette.card }, shadow]}><View style={styles.quoteHeader}><Text style={[styles.author, { color: palette.text }]}>{item.authorJa}</Text><Pressable accessibilityLabel={favoriteIds.has(item.id) ? 'お気に入りから削除' : 'お気に入りに追加'} onPress={() => toggle(item.id)} style={styles.heart}><Ionicons name={favoriteIds.has(item.id) ? 'heart' : 'heart-outline'} size={21} color={favoriteIds.has(item.id) ? '#D97893' : palette.muted} /></Pressable></View><Text style={[styles.textJa, { color: palette.text }]}>「{item.textJa}」</Text><Text style={[styles.original, { color: palette.muted }]}>{item.text}</Text>{expandedId === item.id ? <Text style={[styles.story, { color: palette.muted }]}>{item.story}</Text> : null}</Pressable>}
       />
     </SafeAreaView>

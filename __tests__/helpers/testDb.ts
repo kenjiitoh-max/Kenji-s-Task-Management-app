@@ -11,5 +11,8 @@ export function createTestDb(): Db {
     },
     getFirstSync: <T>(source: string, ...params: unknown[]) => (sqlite.prepare(source).get(...params) as T | undefined) ?? null,
     getAllSync: <T>(source: string, ...params: unknown[]) => sqlite.prepare(source).all(...params) as T[],
+    withTransactionSync: (task) => {
+      sqlite.transaction(task)();
+    },
   };
 }

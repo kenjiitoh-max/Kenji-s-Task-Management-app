@@ -76,9 +76,9 @@ export function getBodyStatus(weightKg: number, bodyFatPct: number | null, heigh
   if (bmi >= 25) {
     const boundary = bmi >= 35 ? 35 : bmi >= 30 ? 30 : 25;
     const target = bmiStage(boundary - 0.01);
-    const targetWeightKg = weightForBmi(boundary, heightCm);
+    const targetWeightKg = Math.floor(weightForBmi(boundary, heightCm) * 10 - 1) / 10;
     const deltaKg = round1(weightKg - targetWeightKg);
-    next = { targetLabel: target.label, targetWeightKg: round1(targetWeightKg), deltaKg, message: `あと ${deltaKg} kg 痩せると「${target.label}」${target.emoji} に。${target.description}` };
+    next = { targetLabel: target.label, targetWeightKg, deltaKg, message: `あと ${deltaKg} kg 痩せると「${target.label}」${target.emoji} に。${target.description}` };
   } else if (bmi < 18.5) {
     const targetWeightKg = weightForBmi(18.5, heightCm);
     const deltaKg = round1(targetWeightKg - weightKg);
