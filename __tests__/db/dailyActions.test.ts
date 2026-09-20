@@ -1,7 +1,7 @@
 import { createTestDb } from '../helpers/testDb';
 import { initDatabase } from '../../src/db/database';
 import { createCategory, getCategoryProgress } from '../../src/db/categories';
-import { createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, resetStaleCompletions, toggleDailyAction } from '../../src/db/dailyActions';
+import { countCompletions, createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, resetStaleCompletions, toggleDailyAction } from '../../src/db/dailyActions';
 import { localDate } from '../../src/db/time';
 
 describe('daily actions', () => {
@@ -13,9 +13,22 @@ describe('daily actions', () => {
     expect(listDailyActions(db, categoryId)[0].is_completed).toBe(false);
     expect(toggleDailyAction(db, id)).toBe(true);
     expect(listDailyActions(db, categoryId)[0].is_completed).toBe(true);
+    expect(countCompletions(db, categoryId)).toBe(1);
     expect(toggleDailyAction(db, id)).toBe(false);
+    expect(countCompletions(db, categoryId)).toBe(0);
     deleteDailyAction(db, id);
     expect(listDailyActions(db, categoryId)).toHaveLength(0);
+  });
+
+  it('keeps completion history when stale daily state resets', () => {
+    const db = createTestDb();
+    initDatabase(db);
+    const categoryId = createCategory(db, '健康', '#00aa55');
+    const actionId = createDailyAction(db, categoryId, '水を飲む');
+    expect(toggleDailyAction(db, actionId)).toBe(true);
+    const before = countCompletions(db, categoryId);
+    resetStaleCompletions(db);
+    expect(countCompletions(db, categoryId)).toBe(before);
   });
 
   it('resets yesterday-local completions and counts only today-local completions', () => {

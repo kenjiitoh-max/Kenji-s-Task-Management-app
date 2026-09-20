@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput } from 'react-native';
 import { Goal, GoalTerm } from '../db/types';
 import { getPalette } from '../theme';
+import { isValidDate } from '../utils/date';
 import { ModalShell } from './ModalShell';
 
 export function GoalFormModal({ visible, dark, term, goal, onClose, onSave, onDelete }: { visible: boolean; dark: boolean; term: GoalTerm; goal?: Goal; onClose: () => void; onSave: (description: string, date: string | null) => void; onDelete: () => void }) {
@@ -28,15 +29,6 @@ export function GoalFormModal({ visible, dark, term, goal, onClose, onSave, onDe
       {goal ? <Pressable onPress={() => Alert.alert('ゴールを削除', 'このゴールを削除しますか？', [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { onDelete(); onClose(); } }])} style={styles.delete}><Text style={styles.deleteText}>ゴールを削除</Text></Pressable> : null}
     </ModalShell>
   );
-}
-
-function isValidDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const [year, month, day] = value.split('-').map(Number);
-  if (month < 1 || month > 12 || day < 1) return false;
-  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
-  return day <= daysInMonth;
 }
 
 const styles = StyleSheet.create({

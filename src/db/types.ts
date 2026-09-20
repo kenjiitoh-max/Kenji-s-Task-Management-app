@@ -1,10 +1,28 @@
 export type GoalTerm = 'short' | 'medium' | 'long';
 
+export type CategoryKind = 'weight' | 'bird' | 'engineer';
+
 export interface Category {
   id: number;
   name: string;
   color: string;
+  kind: CategoryKind | null;
   created_at: string;
+}
+
+export interface BodyRecord {
+  id: number;
+  date: string;
+  weight_kg: number;
+  body_fat_pct: number | null;
+  created_at: string;
+}
+
+export type Sex = 'male' | 'female';
+
+export interface BodyProfile {
+  height_cm: number | null;
+  sex: Sex;
 }
 
 export interface Goal {

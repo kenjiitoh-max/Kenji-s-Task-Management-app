@@ -30,24 +30,40 @@ export function createDailyAction(db: Db, categoryId: number, title: string): nu
 }
 
 export function toggleDailyAction(db: Db, id: number): boolean {
-  const current = db.getFirstSync<{ is_completed: number }>(
-    'SELECT is_completed FROM daily_actions WHERE id = ?',
+  const current = db.getFirstSync<{ is_completed: number; category_id: number }>(
+    'SELECT is_completed, category_id FROM daily_actions WHERE id = ?',
     id,
   );
   if (!current) return false;
   const completed = !Boolean(current.is_completed);
-  db.runSync(
-    'UPDATE daily_actions SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?',
-    completed ? 1 : 0,
-    completed ? localTimestamp() : null,
-    localTimestamp(),
-    id,
-  );
+  const now = localTimestamp();
+  db.withTransactionSync(() => {
+    db.runSync(
+      'UPDATE daily_actions SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?',
+      completed ? 1 : 0,
+      completed ? now : null,
+      now,
+      id,
+    );
+    if (completed) {
+      db.runSync('INSERT INTO completion_log (category_id, action_id, completed_at) VALUES (?, ?, ?)', current.category_id, id, now);
+    } else {
+      db.runSync(
+        'DELETE FROM completion_log WHERE id = (SELECT id FROM completion_log WHERE action_id = ? ORDER BY id DESC LIMIT 1)',
+        id,
+      );
+    }
+  });
   return completed;
 }
 
 export function deleteDailyAction(db: Db, id: number): void {
   db.runSync('DELETE FROM daily_actions WHERE id = ?', id);
+}
+
+export function countCompletions(db: Db, categoryId: number): number {
+  const row = db.getFirstSync<{ count: number }>('SELECT COUNT(*) AS count FROM completion_log WHERE category_id = ?', categoryId);
+  return row?.count ?? 0;
 }
 
 export function resetStaleCompletions(db: Db): void {
