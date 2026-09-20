@@ -1,5 +1,5 @@
 import Animated, { useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
-import React, { useEffect } from 'react';
+import React, { useEffect, useId } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, LinearGradient, Path, RadialGradient, Stop } from 'react-native-svg';
 import { CategoryKind } from '../db/types';
@@ -29,6 +29,10 @@ export function StampBadge({ size = 44, kind, streak, stamped, accent, pulseKey 
 }) {
   const tier = stampTier(streak);
   const colors = tierColors[tier];
+  const uid = useId().replace(/:/g, '');
+  const rimId = `rim${uid}`;
+  const faceId = `face${uid}`;
+  const fireId = `fire${uid}`;
   const flip = useSharedValue(0);
   const scale = useSharedValue(1);
   const drop = useSharedValue(0);
@@ -59,25 +63,25 @@ export function StampBadge({ size = 44, kind, streak, stamped, accent, pulseKey 
     <Animated.View style={[{ height: size, width: size }, coinStyle]}>
       <Svg height={size} viewBox="0 0 100 100" width={size}>
         <Defs>
-          <LinearGradient id="rim" x1="0" x2="1" y1="0" y2="1">
+          <LinearGradient id={rimId} x1="0" x2="1" y1="0" y2="1">
             <Stop offset="0" stopColor={colors.light} />
             <Stop offset="0.45" stopColor={colors.rim} />
             <Stop offset="1" stopColor={colors.dark} />
           </LinearGradient>
-          <RadialGradient cx="0.35" cy="0.3" id="face" r="0.8">
+          <RadialGradient cx="0.35" cy="0.3" id={faceId} r="0.8">
             <Stop offset="0" stopColor={colors.light} />
             <Stop offset="0.55" stopColor={colors.mid} />
             <Stop offset="1" stopColor={colors.dark} />
           </RadialGradient>
-          <LinearGradient id="fire" x1="0" x2="0" y1="1" y2="0">
+          <LinearGradient id={fireId} x1="0" x2="0" y1="1" y2="0">
             <Stop offset="0" stopColor="#F97316" />
             <Stop offset="1" stopColor="#FDE047" />
           </LinearGradient>
         </Defs>
         <Ellipse cx="50" cy="56" fill="#000" opacity="0.22" rx="42" ry="40" />
-        {fire ? <Circle cx="50" cy="50" fill="transparent" opacity="0.9" r="47" stroke="url(#fire)" strokeDasharray="5 3" strokeWidth="4" /> : null}
-        <Circle cx="50" cy="50" fill="url(#rim)" r="44" />
-        <Circle cx="50" cy="50" fill="url(#face)" r="36" />
+        {fire ? <Circle cx="50" cy="50" fill="transparent" opacity="0.9" r="47" stroke={`url(#${fireId})`} strokeDasharray="5 3" strokeWidth="4" /> : null}
+        <Circle cx="50" cy="50" fill={`url(#${rimId})`} r="44" />
+        <Circle cx="50" cy="50" fill={`url(#${faceId})`} r="36" />
         <Circle cx="50" cy="50" fill="transparent" opacity="0.5" r="40" stroke={colors.dark} strokeWidth="1.5" />
         <Circle cx="50" cy="50" fill="transparent" opacity="0.6" r="33" stroke={colors.light} strokeWidth="1" />
         <Path d="M22 34 Q34 18 56 20 Q44 24 30 40 Z" fill="#fff" opacity="0.55" />

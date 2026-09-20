@@ -87,7 +87,17 @@ export function CharacterCard({ dark, lineage, completions, pulseKey }: {
           </Svg>
         </Animated.View>
         {PARTICLES.map((particle, index) => <Particle color={index % 3 === 0 ? '#fff' : aura} key={index} {...particle} />)}
-        <Animated.View style={[styles.groundShadow, { backgroundColor: '#000' }, shadowStyle]} />
+        <Animated.View style={[styles.groundShadow, shadowStyle]}>
+          <Svg height={28} width={140}>
+            <Defs>
+              <RadialGradient cx="0.5" cy="0.5" id="groundShadow" r="0.5">
+                <Stop offset="0" stopColor="#000" stopOpacity="0.9" />
+                <Stop offset="1" stopColor="#000" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Ellipse cx="70" cy="14" fill="url(#groundShadow)" rx="70" ry="14" />
+          </Svg>
+        </Animated.View>
         <Animated.View style={[styles.character, charStyle]}>
           <Text style={styles.emoji}>{state.stage.emoji}</Text>
         </Animated.View>
@@ -119,7 +129,7 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 128, lineHeight: 150, textAlign: 'center' },
   fill: { borderRadius: 4, height: 8 },
   flavor: { color: '#D9CFEA', fontSize: 14, lineHeight: 21, marginBottom: 14, marginTop: 4 },
-  groundShadow: { borderRadius: 40, height: 16, left: '50%', marginLeft: -55, position: 'absolute', top: HERO * 0.74, width: 110 },
+  groundShadow: { height: 28, left: '50%', marginLeft: -70, position: 'absolute', top: HERO * 0.72, width: 140 },
   hero: { alignItems: 'center', height: HERO, justifyContent: 'center', overflow: 'hidden' },
   info: { padding: 18, paddingTop: 6 },
   layer: { position: 'absolute' },
