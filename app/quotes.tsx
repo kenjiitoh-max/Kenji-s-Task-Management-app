@@ -28,6 +28,7 @@ export default function QuotesScreen() {
   const palette = getPalette(dark ? 'dark' : 'light');
   const listRef = useRef<FlatList<Quote>>(null);
   const hasRetriedScrollRef = useRef(false);
+  const didInitialScroll = useRef(false);
   const [filter, setFilter] = useState<Filter>('all');
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(id || null);
@@ -36,11 +37,12 @@ export default function QuotesScreen() {
     setFavoriteIds(new Set(listFavoriteIds(getDb())));
   }, []));
   useEffect(() => {
-    if (!id) return;
+    if (!id || didInitialScroll.current) return;
     const index = filteredQuotes.findIndex((quote) => quote.id === id);
     if (index >= 0) {
-      setExpandedId(id);
+      didInitialScroll.current = true;
       hasRetriedScrollRef.current = false;
+      setExpandedId(id);
       const timer = setTimeout(() => listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.2 }), 100);
       return () => clearTimeout(timer);
     }
