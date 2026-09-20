@@ -7,6 +7,7 @@ import { Celebration } from '../../src/components/Celebration';
 import { BodyProfileModal } from '../../src/components/BodyProfileModal';
 import { BodyRecordModal } from '../../src/components/BodyRecordModal';
 import { BodyStatusCard } from '../../src/components/BodyStatusCard';
+import { BookshelfCard } from '../../src/components/BookshelfCard';
 import { CharacterCard } from '../../src/components/CharacterCard';
 import { DailyActionFormModal } from '../../src/components/DailyActionFormModal';
 import { DailyActionItem } from '../../src/components/DailyActionItem';
@@ -96,6 +97,7 @@ export default function CategoryScreen() {
         ListHeaderComponent={
           <View>
             {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
+            {category.kind === 'reader' ? <BookshelfCard accent={category.color} categoryId={categoryId} dark={dark} onPress={() => router.push(`/books/${id}`)} /> : null}
             <Text style={[styles.section, { color: palette.text }]}>ゴール</Text>
             <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard dark={dark} goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
             <Text style={[styles.section, { color: palette.text }]}>今日のデイリーアクション</Text>

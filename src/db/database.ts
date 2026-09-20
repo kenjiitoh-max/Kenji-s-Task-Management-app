@@ -61,8 +61,28 @@ export function initDatabase(db: Db): void {
       quote_id TEXT PRIMARY KEY,
       created_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS books (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      authors TEXT,
+      cover_url TEXT,
+      external_id TEXT,
+      status TEXT NOT NULL CHECK(status IN ('want', 'reading', 'done')),
+      finished_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
   migrateCategoryKind(db);
+  addColumnIfMissing(db, 'completion_log', 'book_id', 'INTEGER');
+}
+
+function addColumnIfMissing(db: Db, table: string, column: string, type: string): void {
+  const columns = db.getAllSync<{ name: string }>(`PRAGMA table_info(${table})`);
+  if (!columns.some((entry) => entry.name === column)) {
+    db.execSync(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+  }
 }
 
 const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer', 読書: 'reader', 筋トレ: 'athlete' };
