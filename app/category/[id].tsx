@@ -23,7 +23,12 @@ import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
 import { BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
 import { getLevelState } from '../../src/growth/levels';
+import { randomQuote } from '../../src/quotes/dailyQuote';
 import { getPalette } from '../../src/theme';
+
+function shouldShowQuote(): boolean {
+  return Math.random() < 1 / 3;
+}
 
 export default function CategoryScreen() {
   const router = useRouter();
@@ -71,7 +76,9 @@ export default function CategoryScreen() {
       setPulseKey((key) => key + 1);
       const allComplete = progress.total > 0 && progress.completed === progress.total;
       const message = before && after && after.level > before.level ? after.stage.name !== before.stage.name ? `進化！ ${after.stage.emoji} ${after.stage.name} になった！` : `レベルアップ！ Lv.${after.level}` : undefined;
-      celebration.celebrate(allComplete, message);
+      const quote = !allComplete && !message && shouldShowQuote() ? randomQuote() : null;
+      const quoteMessage = quote && quote.textJa.length <= 40 ? `「${quote.textJa}」— ${quote.authorJa}` : undefined;
+      celebration.celebrate(allComplete, message || quoteMessage);
     } else celebration.uncomplete();
   };
   return (

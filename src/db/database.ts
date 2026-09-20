@@ -57,6 +57,10 @@ export function initDatabase(db: Db): void {
       action_id INTEGER,
       completed_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS quote_favorites (
+      quote_id TEXT PRIMARY KEY,
+      created_at TEXT NOT NULL
+    );
   `);
   migrateCategoryKind(db);
 }
