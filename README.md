@@ -41,6 +41,8 @@ npm run typecheck
 npm run lint
 ```
 
+GitHub Actionsでも、Pull RequestごとにLint・型チェック・テストを自動実行します。
+
 ## プロジェクト構成
 
 ```text
