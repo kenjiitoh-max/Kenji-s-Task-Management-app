@@ -143,7 +143,7 @@ export const quotes: Quote[] = [
   makeQuote('rohn-01', 'Either you run the day or the day runs you.', '一日を動かすのは自分か、それとも一日に動かされるかだ。', 'Jim Rohn', 'Jim Rohn', ['focus', 'work'], '一日の主導権を握ること'),
   makeQuote('rohn-02', 'Discipline is the bridge between goals and accomplishment.', '規律は、目標と達成をつなぐ橋だ。', 'Jim Rohn', 'Jim Rohn', ['work', 'focus'], '規律が結果をつなぐこと'),
 
-  makeQuote('seneca-01', 'Luck is what happens when preparation meets opportunity.', '幸運とは、準備が機会に出会うことだ。', 'Seneca', 'セネカ', ['work', 'focus'], '準備と機会'),
+  makeQuote('seneca-01', 'We suffer more often in imagination than in reality.', '私たちは現実よりも想像の中で苦しむことが多い。', 'Seneca', 'セネカ', ['resilience', 'focus'], '不安を現実と見分けること'),
   makeQuote('seneca-02', 'Difficulties strengthen the mind, as labor does the body.', '労働が体を強くするように、困難は心を強くする。', 'Seneca', 'セネカ', ['resilience', 'health'], '困難が心身を鍛えること'),
 
   makeQuote('marcus-01', 'You have power over your mind—not outside events. Realize this, and you will find strength.', 'あなたが支配できるのは心であり、外の出来事ではない。それを理解すれば、強さが見つかる。', 'Marcus Aurelius', 'マルクス・アウレリウス', ['focus', 'resilience'], '自分の心に集中すること'),
