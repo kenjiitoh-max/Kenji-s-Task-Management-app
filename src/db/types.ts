@@ -49,6 +49,17 @@ export interface Book {
   updated_at: string;
 }
 
+export interface WorkoutSet {
+  id: number;
+  category_id: number;
+  exercise: string;
+  weight_kg: number;
+  reps: number;
+  sets: number;
+  date: string;
+  performed_at: string;
+}
+
 export interface DailyAction {
   id: number;
   category_id: number;

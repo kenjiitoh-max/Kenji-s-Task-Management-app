@@ -73,9 +73,20 @@ export function initDatabase(db: Db): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS workout_sets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      exercise TEXT NOT NULL,
+      weight_kg REAL NOT NULL,
+      reps INTEGER NOT NULL,
+      sets INTEGER NOT NULL,
+      date TEXT NOT NULL,
+      performed_at TEXT NOT NULL
+    );
   `);
   migrateCategoryKind(db);
   addColumnIfMissing(db, 'completion_log', 'book_id', 'INTEGER');
+  addColumnIfMissing(db, 'completion_log', 'workout_date', 'TEXT');
 }
 
 function addColumnIfMissing(db: Db, table: string, column: string, type: string): void {
