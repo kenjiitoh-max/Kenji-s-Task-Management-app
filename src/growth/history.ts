@@ -2,7 +2,7 @@ import { levelFromXp, xpFromCompletions } from './levels';
 
 export type HistoryPoint = { x: string; y: number };
 
-function shiftDate(date: string, days: number): string {
+export function shiftDate(date: string, days: number): string {
   const value = new Date(`${date}T00:00:00`);
   value.setDate(value.getDate() + days);
   const year = value.getFullYear();

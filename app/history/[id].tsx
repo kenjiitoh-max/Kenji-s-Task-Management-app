@@ -11,20 +11,11 @@ import { listBodyRecordsAsc } from '../../src/db/bodyRecords';
 import { localDate } from '../../src/db/time';
 import { Category, BodyRecord } from '../../src/db/types';
 import { getCategory } from '../../src/db/categories';
-import { currentStreak, dailyCompletionCounts, xpTrajectory } from '../../src/growth/history';
+import { currentStreak, dailyCompletionCounts, shiftDate, xpTrajectory } from '../../src/growth/history';
 import { Lineage, stageForLevel } from '../../src/growth/levels';
 import { getPalette, radius, shadow } from '../../src/theme';
 
 type Period = 30 | 90 | 'all';
-
-function shiftDate(date: string, days: number): string {
-  const value = new Date(`${date}T00:00:00`);
-  value.setDate(value.getDate() + days);
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, '0');
-  const day = String(value.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
 
 function daysBetween(start: string, end: string): number {
   const startTime = new Date(`${start}T00:00:00`).getTime();
@@ -53,7 +44,7 @@ export default function HistoryScreen() {
     const db = getDb();
     const nextCategory = getCategory(db, categoryId);
     setCategory(nextCategory);
-    setRecords(nextCategory?.kind === 'weight' ? listBodyRecordsAsc(db, null) : []);
+    setRecords(nextCategory?.kind === 'weight' ? listBodyRecordsAsc(db) : []);
     setCompletionDates(listCompletionDates(db, categoryId));
   }, [categoryId]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
@@ -98,7 +89,7 @@ export default function HistoryScreen() {
         </HistoryCard>}
         <HistoryCard palette={palette} title="活動履歴">
           <BarChart bars={activityPoints} color={category.color} dark={dark} />
-          <Text style={[styles.summary, { color: palette.muted }]}>合計 {periodDates.length} 回 / 連続 {currentStreak(periodDates, today)} 日</Text>
+          <Text style={[styles.summary, { color: palette.muted }]}>合計 {periodDates.length} 回 / 連続 {currentStreak(completionDates, today)} 日</Text>
         </HistoryCard>
       </ScrollView>
     </SafeAreaView>
