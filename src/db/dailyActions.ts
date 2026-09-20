@@ -1,4 +1,5 @@
 import { Db } from './Db';
+import { localDate, localTimestamp } from './time';
 import { DailyAction } from './types';
 
 type ActionRow = Omit<DailyAction, 'is_completed'> & { is_completed: number };
@@ -16,7 +17,7 @@ export function listDailyActions(db: Db, categoryId: number): DailyAction[] {
 }
 
 export function createDailyAction(db: Db, categoryId: number, title: string): number {
-  const now = new Date().toISOString();
+  const now = localTimestamp();
   return db.runSync(
     'INSERT INTO daily_actions (category_id, title, created_at, updated_at) VALUES (?, ?, ?, ?)',
     categoryId,
@@ -36,8 +37,8 @@ export function toggleDailyAction(db: Db, id: number): boolean {
   db.runSync(
     'UPDATE daily_actions SET is_completed = ?, completed_at = ?, updated_at = ? WHERE id = ?',
     completed ? 1 : 0,
-    completed ? new Date().toISOString() : null,
-    new Date().toISOString(),
+    completed ? localTimestamp() : null,
+    localTimestamp(),
     id,
   );
   return completed;
@@ -48,12 +49,11 @@ export function deleteDailyAction(db: Db, id: number): void {
 }
 
 export function resetStaleCompletions(db: Db): void {
-  const now = new Date();
-  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const date = `${localDate()}%`;
   db.runSync(
     `UPDATE daily_actions SET is_completed = 0, completed_at = NULL, updated_at = ?
      WHERE is_completed = 1 AND (completed_at IS NULL OR completed_at NOT LIKE ?)`,
-    now.toISOString(),
-    `${date}%`,
+    localTimestamp(),
+    date,
   );
 }

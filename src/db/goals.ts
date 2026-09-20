@@ -1,4 +1,5 @@
 import { Db } from './Db';
+import { localTimestamp } from './time';
 import { Goal, GoalTerm } from './types';
 
 export function listGoals(db: Db, categoryId: number): Goal[] {
@@ -31,7 +32,7 @@ export function upsertGoal(
     term,
     description.trim(),
     targetDate || null,
-    new Date().toISOString(),
+    localTimestamp(),
   ).lastInsertRowId;
 }
 

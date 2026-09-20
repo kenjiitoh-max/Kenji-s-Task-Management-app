@@ -1,5 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import { Db } from './Db';
+import { localTimestamp } from './time';
 
 let database: SQLiteDatabase | null = null;
 
@@ -43,7 +44,7 @@ export function initDatabase(db: Db): void {
 export function seedCategories(db: Db): void {
   const count = db.getFirstSync<{ count: number }>('SELECT COUNT(*) AS count FROM categories');
   if (!count || count.count > 0) return;
-  const now = new Date().toISOString();
+  const now = localTimestamp();
   const seeds = [
     ['体重管理', '#F97362'],
     ['英語', '#3B82F6'],

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, SafeAreaView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { Celebration } from '../../src/components/Celebration';
@@ -34,7 +34,7 @@ export default function CategoryScreen() {
     setGoals(listGoals(db, categoryId));
     setActions(listDailyActions(db, categoryId));
   }, [categoryId]);
-  React.useEffect(() => { refresh(); }, [refresh]);
+  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
   if (!category) return null;
   const goalFor = (term: GoalTerm) => goals.find((goal) => goal.term === term);
   const toggle = (action: DailyAction) => {

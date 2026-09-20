@@ -1,12 +1,6 @@
 import { Db } from './Db';
+import { localDate, localTimestamp } from './time';
 import { Category } from './types';
-
-const today = () => {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${now.getFullYear()}-${month}-${day}`;
-};
 
 export function listCategories(db: Db): Category[] {
   return db.getAllSync<Category>('SELECT * FROM categories ORDER BY id');
@@ -21,7 +15,7 @@ export function createCategory(db: Db, name: string, color: string): number {
     'INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)',
     name.trim(),
     color,
-    new Date().toISOString(),
+    localTimestamp(),
   ).lastInsertRowId;
 }
 
@@ -34,7 +28,7 @@ export function deleteCategory(db: Db, id: number): void {
 }
 
 export function getCategoryProgress(db: Db, categoryId: number): { total: number; completed: number } {
-  const date = `${today()}%`;
+  const date = `${localDate()}%`;
   const result = db.getFirstSync<{ total: number; completed: number }>(
     `SELECT COUNT(*) AS total,
       SUM(CASE WHEN is_completed = 1 AND completed_at LIKE ? THEN 1 ELSE 0 END) AS completed
