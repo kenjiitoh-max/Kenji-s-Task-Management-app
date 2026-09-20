@@ -60,6 +60,14 @@ export interface WorkoutSet {
   performed_at: string;
 }
 
+export interface ActionTemplate {
+  id: number;
+  category_id: number;
+  title: string;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface DailyAction {
   id: number;
   category_id: number;

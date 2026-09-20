@@ -14,19 +14,23 @@ import { DailyActionItem } from '../../src/components/DailyActionItem';
 import { Fab } from '../../src/components/Fab';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalFormModal } from '../../src/components/GoalFormModal';
+import { StampCard } from '../../src/components/StampCard';
 import { WorkoutCard } from '../../src/components/WorkoutCard';
 import { WorkoutLogModal } from '../../src/components/WorkoutLogModal';
 import { useCelebration } from '../../src/hooks/useCelebration';
+import { applyActionTemplate, createActionTemplate, deleteActionTemplate, listActionTemplates } from '../../src/db/actionTemplates';
 import { getCategory, getCategoryProgress } from '../../src/db/categories';
 import { getDb } from '../../src/db/database';
-import { countCompletions, createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
+import { countCompletions, createDailyAction, deleteDailyAction, ensureDailyReset, listCompletionDates, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
 import { getBodyProfile, getLatestBodyRecord, listBodyRecords, saveBodyProfile, upsertBodyRecord } from '../../src/db/bodyRecords';
 import { localDate } from '../../src/db/time';
 import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
-import { BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm, WorkoutSet } from '../../src/db/types';
+import { ActionTemplate, BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm, WorkoutSet } from '../../src/db/types';
 import { addWorkoutSet, deleteWorkoutSet, ExerciseBest, getExerciseBest, getLastSet, isPersonalRecord, listExerciseBests, listWorkoutSets, NewWorkoutSet, recentExercises } from '../../src/db/workouts';
+import { currentStreak } from '../../src/growth/history';
 import { getLevelState, isLineage } from '../../src/growth/levels';
+import { hasStamp, milestoneFor } from '../../src/growth/stamps';
 import { randomQuote } from '../../src/quotes/dailyQuote';
 import { getPalette } from '../../src/theme';
 
@@ -56,6 +60,9 @@ export default function CategoryScreen() {
   const [bests, setBests] = useState<ExerciseBest[]>([]);
   const [recent, setRecent] = useState<string[]>([]);
   const [pulseKey, setPulseKey] = useState(0);
+  const [stampDates, setStampDates] = useState<string[]>([]);
+  const [stampPulse, setStampPulse] = useState(0);
+  const [templates, setTemplates] = useState<ActionTemplate[]>([]);
   const celebration = useCelebration();
   const refresh = useCallback(() => {
     const db = getDb();
@@ -63,6 +70,8 @@ export default function CategoryScreen() {
     setCategory(getCategory(db, categoryId));
     setGoals(listGoals(db, categoryId));
     setActions(listDailyActions(db, categoryId));
+    setStampDates(listCompletionDates(db, categoryId));
+    setTemplates(listActionTemplates(db, categoryId));
     setLatest(getLatestBodyRecord(db));
     setRecords(listBodyRecords(db, 7));
     setProfile(getBodyProfile(db));
@@ -93,6 +102,7 @@ export default function CategoryScreen() {
   };
   const toggle = (action: DailyAction) => {
     const db = getDb();
+    const hadStampToday = hasStamp(listCompletionDates(db, categoryId), localDate());
     const before = isLineage(category.kind) ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
     const completed = toggleDailyAction(db, action.id);
     const after = isLineage(category.kind) ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
@@ -101,10 +111,20 @@ export default function CategoryScreen() {
       const progress = getCategoryProgress(db, categoryId);
       setPulseKey((key) => key + 1);
       const allComplete = progress.total > 0 && progress.completed === progress.total;
-      const message = before && after && after.level > before.level ? after.stage.name !== before.stage.name ? `進化！ ${after.stage.emoji} ${after.stage.name} になった！` : `レベルアップ！ Lv.${after.level}` : undefined;
-      const quote = !allComplete && !message && shouldShowQuote() ? randomQuote() : null;
+      const levelMessage = before && after && after.level > before.level ? after.stage.name !== before.stage.name ? `進化！ ${after.stage.emoji} ${after.stage.name} になった！` : `レベルアップ！ Lv.${after.level}` : undefined;
+      let milestoneMessage: string | undefined;
+      let stampMessage: string | undefined;
+      if (!hadStampToday) {
+        setStampPulse((key) => key + 1);
+        const streak = currentStreak(listCompletionDates(db, categoryId), localDate());
+        const milestone = milestoneFor(streak);
+        milestoneMessage = milestone ? `🎉 ${milestone.emoji} ${streak}日連続！「${milestone.title}」を獲得！` : undefined;
+        stampMessage = milestoneMessage ? undefined : `スタンプGET！ 🔥${streak}日連続`;
+      }
+      const baseMessage = levelMessage || milestoneMessage || stampMessage;
+      const quote = !allComplete && !baseMessage && shouldShowQuote() ? randomQuote() : null;
       const quoteMessage = quote && quote.textJa.length <= 40 ? `「${quote.textJa}」— ${quote.authorJa}` : undefined;
-      celebration.celebrate(allComplete, message || quoteMessage);
+      celebration.celebrate(allComplete, baseMessage || quoteMessage, Boolean(milestoneMessage));
     } else celebration.uncomplete();
   };
   return (
@@ -124,6 +144,7 @@ export default function CategoryScreen() {
             {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
             {category.kind === 'reader' ? <BookshelfCard accent={category.color} categoryId={categoryId} dark={dark} onPress={() => router.push(`/books/${id}`)} /> : null}
             {category.kind === 'athlete' ? <WorkoutCard accent={category.color} bests={bests} dark={dark} onDelete={(set) => Alert.alert('削除', `${set.exercise} の記録を削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteWorkoutSet(getDb(), set.id); refresh(); } }])} onLog={() => setWorkoutModal(true)} today={todaySets} /> : null}
+            <StampCard accent={category.color} dark={dark} dates={stampDates} pulseKey={stampPulse} today={localDate()} />
             <Text style={[styles.section, { color: palette.text }]}>ゴール</Text>
             <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard dark={dark} goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
             <Text style={[styles.section, { color: palette.text }]}>今日のデイリーアクション</Text>
@@ -133,12 +154,12 @@ export default function CategoryScreen() {
         renderItem={({ item }) => <DailyActionItem action={item} accent={category.color} dark={dark} onDelete={() => Alert.alert('削除', 'このアクションを削除しますか？', [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteDailyAction(getDb(), item.id); refresh(); } }])} onToggle={() => toggle(item)} />}
       />
       <Fab color={category.color} onPress={() => setActionModal(true)} />
-      <DailyActionFormModal dark={dark} onClose={() => setActionModal(false)} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} visible={actionModal} />
+      <DailyActionFormModal accent={category.color} dark={dark} onApplyTemplate={(template) => { applyActionTemplate(getDb(), template.id); refresh(); }} onClose={() => setActionModal(false)} onDeleteTemplate={(template) => { deleteActionTemplate(getDb(), template.id); refresh(); }} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} onSaveTemplate={(title) => { createActionTemplate(getDb(), categoryId, title); refresh(); }} templates={templates} visible={actionModal} />
       {category.kind === 'athlete' ? <WorkoutLogModal bestFor={(exercise) => getExerciseBest(getDb(), categoryId, exercise)} dark={dark} lastSet={(exercise) => getLastSet(getDb(), categoryId, exercise)} onClose={() => setWorkoutModal(false)} onSave={logWorkout} recent={recent} visible={workoutModal} /> : null}
       <BodyRecordModal dark={dark} onClose={() => setRecordModal(false)} onSave={(date, weight, fat) => { upsertBodyRecord(getDb(), date, weight, fat); refresh(); }} record={records.find((record) => record.date === localDate()) || null} visible={recordModal} />
       <BodyProfileModal dark={dark} onClose={() => setProfileModal(false)} onSave={(height, sex) => { saveBodyProfile(getDb(), { height_cm: height, sex }); refresh(); }} profile={profile} visible={profileModal} />
       {goalTerm ? <GoalFormModal dark={dark} goal={goalFor(goalTerm)} onClose={() => setGoalTerm(null)} onDelete={() => { const goal = goalFor(goalTerm); if (goal) deleteGoal(getDb(), goal.id); refresh(); }} onSave={(description, date) => { upsertGoal(getDb(), categoryId, goalTerm, description, date); refresh(); }} term={goalTerm} visible /> : null}
-      <Celebration celebrationId={celebration.celebrationId} completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
+      <Celebration big={celebration.big} celebrationId={celebration.celebrationId} completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
     </SafeAreaView>
   );
 }

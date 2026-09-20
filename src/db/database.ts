@@ -73,6 +73,14 @@ export function initDatabase(db: Db): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS action_templates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      UNIQUE(category_id, title)
+    );
     CREATE TABLE IF NOT EXISTS workout_sets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
