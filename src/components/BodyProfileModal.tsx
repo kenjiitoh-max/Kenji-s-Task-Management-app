@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BodyProfile, Sex } from '../db/types';
-import { getPalette } from '../theme';
+import { getPalette, textOn } from '../theme';
 import { ModalShell } from './ModalShell';
 
 export function BodyProfileModal({ visible, dark, profile, onClose, onSave }: {
@@ -37,7 +37,7 @@ export function BodyProfileModal({ visible, dark, profile, onClose, onSave }: {
         {([['male', '男性'], ['female', '女性']] as const).map(([value, label]) => <Pressable key={value} onPress={() => setSex(value)} style={[styles.segmentButton, sex === value && { backgroundColor: palette.card }]}><Text style={{ color: sex === value ? palette.text : palette.muted, fontWeight: '700' }}>{label}</Text></Pressable>)}
       </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={styles.saveText}>保存する</Text></Pressable>
+      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>保存する</Text></Pressable>
     </ModalShell>
   );
 }
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   input: { borderRadius: 14, fontSize: 16, marginBottom: 18, padding: 14 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 7 },
   save: { alignItems: 'center', borderRadius: 14, padding: 15 },
-  saveText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  saveText: { fontSize: 16, fontWeight: '700' },
   segment: { borderRadius: 14, flexDirection: 'row', marginBottom: 20, padding: 4 },
   segmentButton: { alignItems: 'center', borderRadius: 11, flex: 1, padding: 11 },
 });

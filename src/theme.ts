@@ -1,11 +1,14 @@
 import { ColorSchemeName, Platform } from 'react-native';
+import { textOn } from './contrast';
+
+export { textOn };
 
 export const palettes = {
   light: {
     background: '#F7F3FC',
     card: '#FFFFFF',
     text: '#2B1B45',
-    muted: '#8B7BA3',
+    muted: '#6F5F88',
     border: '#E8DFF4',
     primary: '#7B4FB8',
     gold: '#D4A537',
