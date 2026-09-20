@@ -51,15 +51,15 @@ describe('daily actions', () => {
       "UPDATE daily_actions SET is_completed = 1, completed_at = '2020-01-01T00:00:00' WHERE id = ?",
       actionId,
     );
-    ensureDailyReset(db, 'test-day');
+    expect(ensureDailyReset(db, 'test-day')).toBe(true);
     expect(listDailyActions(db, categoryId)[0].is_completed).toBe(false);
     db.runSync(
       "UPDATE daily_actions SET is_completed = 1, completed_at = '2020-01-01T00:00:00' WHERE id = ?",
       actionId,
     );
-    ensureDailyReset(db, 'test-day');
+    expect(ensureDailyReset(db, 'test-day')).toBe(false);
     expect(listDailyActions(db, categoryId)[0].is_completed).toBe(true);
-    ensureDailyReset(db, 'next-test-day');
+    expect(ensureDailyReset(db, 'next-test-day')).toBe(true);
     expect(listDailyActions(db, categoryId)[0].is_completed).toBe(false);
   });
 });

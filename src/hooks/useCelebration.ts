@@ -7,6 +7,7 @@ export function useCelebration() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [completeAll, setCompleteAll] = useState(false);
+  const [celebrationId, setCelebrationId] = useState(0);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (hideTimer.current) {
@@ -20,6 +21,7 @@ export function useCelebration() {
       hideTimer.current = null;
     }
     setCompleteAll(allComplete);
+    setCelebrationId((id) => id + 1);
     setToastMessage(allComplete ? '今日のアクション全達成！🎉' : messages[Math.floor(Math.random() * messages.length)]);
     setToastVisible(true);
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -31,5 +33,5 @@ export function useCelebration() {
   const uncomplete = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
-  return { toastMessage, toastVisible, completeAll, celebrate, uncomplete };
+  return { toastMessage, toastVisible, completeAll, celebrationId, celebrate, uncomplete };
 }

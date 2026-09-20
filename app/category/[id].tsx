@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Celebration } from '../../src/components/Celebration';
@@ -13,6 +13,7 @@ import { useCelebration } from '../../src/hooks/useCelebration';
 import { getCategory, getCategoryProgress } from '../../src/db/categories';
 import { getDb } from '../../src/db/database';
 import { createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
+import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
 import { Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
 import { getPalette } from '../../src/theme';
@@ -37,6 +38,7 @@ export default function CategoryScreen() {
     setActions(listDailyActions(db, categoryId));
   }, [categoryId]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+  useEffect(() => subscribe(refresh), [refresh]);
   if (!category) return null;
   const goalFor = (term: GoalTerm) => goals.find((goal) => goal.term === term);
   const toggle = (action: DailyAction) => {
@@ -72,7 +74,7 @@ export default function CategoryScreen() {
       <Fab color={category.color} onPress={() => setActionModal(true)} />
       <DailyActionFormModal dark={dark} onClose={() => setActionModal(false)} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} visible={actionModal} />
       {goalTerm ? <GoalFormModal dark={dark} goal={goalFor(goalTerm)} onClose={() => setGoalTerm(null)} onDelete={() => { const goal = goalFor(goalTerm); if (goal) deleteGoal(getDb(), goal.id); refresh(); }} onSave={(description, date) => { upsertGoal(getDb(), categoryId, goalTerm, description, date); refresh(); }} term={goalTerm} visible /> : null}
-      <Celebration completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
+      <Celebration celebrationId={celebration.celebrationId} completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
     </SafeAreaView>
   );
 }

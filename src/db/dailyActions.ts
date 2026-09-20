@@ -60,8 +60,9 @@ export function resetStaleCompletions(db: Db): void {
   );
 }
 
-export function ensureDailyReset(db: Db, today = localDate()): void {
-  if (lastResetDate === today) return;
+export function ensureDailyReset(db: Db, today = localDate()): boolean {
+  if (lastResetDate === today) return false;
   resetStaleCompletions(db);
   lastResetDate = today;
+  return true;
 }

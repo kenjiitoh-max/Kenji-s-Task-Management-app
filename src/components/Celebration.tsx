@@ -3,11 +3,11 @@ import React, { useEffect, useRef } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { Toast } from './Toast';
 
-export function Celebration({ completeAll, toastMessage, toastVisible }: { completeAll: boolean; toastMessage: string; toastVisible: boolean }) {
+export function Celebration({ celebrationId, completeAll, toastMessage, toastVisible }: { celebrationId: number; completeAll: boolean; toastMessage: string; toastVisible: boolean }) {
   const confettiRef = useRef<ConfettiCannon>(null);
   useEffect(() => {
-    if (toastVisible) confettiRef.current?.start();
-  }, [toastVisible]);
+    if (celebrationId > 0) confettiRef.current?.start();
+  }, [celebrationId]);
   return (
     <>
       <ConfettiCannon ref={confettiRef} autoStart={false} count={completeAll ? 250 : 80} origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height - 80 }} fadeOut={completeAll} />

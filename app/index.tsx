@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryCard } from '../src/components/CategoryCard';
@@ -8,6 +8,7 @@ import { Fab } from '../src/components/Fab';
 import { createCategory, getCategoryProgress, listCategories } from '../src/db/categories';
 import { getDb } from '../src/db/database';
 import { ensureDailyReset } from '../src/db/dailyActions';
+import { subscribe } from '../src/db/dailyResetEvents';
 import { Category } from '../src/db/types';
 import { getPalette } from '../src/theme';
 
@@ -26,6 +27,7 @@ export default function HomeScreen() {
     setProgress(Object.fromEntries(items.map((item) => [item.id, getCategoryProgress(db, item.id)])));
   }, []);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+  useEffect(() => subscribe(refresh), [refresh]);
   const date = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
