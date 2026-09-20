@@ -4,6 +4,10 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Celebration } from '../../src/components/Celebration';
+import { BodyProfileModal } from '../../src/components/BodyProfileModal';
+import { BodyRecordModal } from '../../src/components/BodyRecordModal';
+import { BodyStatusCard } from '../../src/components/BodyStatusCard';
+import { CharacterCard } from '../../src/components/CharacterCard';
 import { DailyActionFormModal } from '../../src/components/DailyActionFormModal';
 import { DailyActionItem } from '../../src/components/DailyActionItem';
 import { Fab } from '../../src/components/Fab';
@@ -12,10 +16,13 @@ import { GoalFormModal } from '../../src/components/GoalFormModal';
 import { useCelebration } from '../../src/hooks/useCelebration';
 import { getCategory, getCategoryProgress } from '../../src/db/categories';
 import { getDb } from '../../src/db/database';
-import { createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
+import { countCompletions, createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
+import { getBodyProfile, getLatestBodyRecord, listBodyRecords, saveBodyProfile, upsertBodyRecord } from '../../src/db/bodyRecords';
+import { localDate } from '../../src/db/time';
 import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
-import { Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
+import { BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
+import { getLevelState } from '../../src/growth/levels';
 import { getPalette } from '../../src/theme';
 
 export default function CategoryScreen() {
@@ -29,6 +36,13 @@ export default function CategoryScreen() {
   const [actions, setActions] = useState<DailyAction[]>([]);
   const [goalTerm, setGoalTerm] = useState<GoalTerm | null>(null);
   const [actionModal, setActionModal] = useState(false);
+  const [recordModal, setRecordModal] = useState(false);
+  const [profileModal, setProfileModal] = useState(false);
+  const [latest, setLatest] = useState<BodyRecord | null>(null);
+  const [records, setRecords] = useState<BodyRecord[]>([]);
+  const [profile, setProfile] = useState<BodyProfile>({ height_cm: null, sex: 'male' });
+  const [completions, setCompletions] = useState(0);
+  const [pulseKey, setPulseKey] = useState(0);
   const celebration = useCelebration();
   const refresh = useCallback(() => {
     const db = getDb();
@@ -36,6 +50,11 @@ export default function CategoryScreen() {
     setCategory(getCategory(db, categoryId));
     setGoals(listGoals(db, categoryId));
     setActions(listDailyActions(db, categoryId));
+    setLatest(getLatestBodyRecord(db));
+    setRecords(listBodyRecords(db, 7));
+    setProfile(getBodyProfile(db));
+    const current = getCategory(db, categoryId);
+    setCompletions(current?.kind === 'bird' || current?.kind === 'engineer' ? countCompletions(db, categoryId) : 0);
   }, [categoryId]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
   useEffect(() => subscribe(refresh), [refresh]);
@@ -43,11 +62,16 @@ export default function CategoryScreen() {
   const goalFor = (term: GoalTerm) => goals.find((goal) => goal.term === term);
   const toggle = (action: DailyAction) => {
     const db = getDb();
+    const before = category.kind === 'bird' || category.kind === 'engineer' ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
     const completed = toggleDailyAction(db, action.id);
+    const after = category.kind === 'bird' || category.kind === 'engineer' ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
     refresh();
     if (completed) {
       const progress = getCategoryProgress(db, categoryId);
-      celebration.celebrate(progress.total > 0 && progress.completed === progress.total);
+      setPulseKey((key) => key + 1);
+      const allComplete = progress.total > 0 && progress.completed === progress.total;
+      const message = before && after && after.level > before.level ? after.stage.name !== before.stage.name ? `進化！ ${after.stage.emoji} ${after.stage.name} になった！` : `レベルアップ！ Lv.${after.level}` : undefined;
+      celebration.celebrate(allComplete, message);
     } else celebration.uncomplete();
   };
   return (
@@ -63,6 +87,7 @@ export default function CategoryScreen() {
         keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={
           <View>
+            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : category.kind === 'bird' || category.kind === 'engineer' ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
             <Text style={[styles.section, { color: palette.text }]}>ゴール</Text>
             <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard dark={dark} goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
             <Text style={[styles.section, { color: palette.text }]}>今日のデイリーアクション</Text>
@@ -73,6 +98,8 @@ export default function CategoryScreen() {
       />
       <Fab color={category.color} onPress={() => setActionModal(true)} />
       <DailyActionFormModal dark={dark} onClose={() => setActionModal(false)} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} visible={actionModal} />
+      <BodyRecordModal dark={dark} onClose={() => setRecordModal(false)} onSave={(date, weight, fat) => { upsertBodyRecord(getDb(), date, weight, fat); refresh(); }} record={records.find((record) => record.date === localDate()) || null} visible={recordModal} />
+      <BodyProfileModal dark={dark} onClose={() => setProfileModal(false)} onSave={(height, sex) => { saveBodyProfile(getDb(), { height_cm: height, sex }); refresh(); }} profile={profile} visible={profileModal} />
       {goalTerm ? <GoalFormModal dark={dark} goal={goalFor(goalTerm)} onClose={() => setGoalTerm(null)} onDelete={() => { const goal = goalFor(goalTerm); if (goal) deleteGoal(getDb(), goal.id); refresh(); }} onSave={(description, date) => { upsertGoal(getDb(), categoryId, goalTerm, description, date); refresh(); }} term={goalTerm} visible /> : null}
       <Celebration celebrationId={celebration.celebrationId} completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
     </SafeAreaView>

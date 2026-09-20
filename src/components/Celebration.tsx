@@ -1,16 +1,12 @@
 import ConfettiCannon from 'react-native-confetti-cannon';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { Toast } from './Toast';
 
 export function Celebration({ celebrationId, completeAll, toastMessage, toastVisible }: { celebrationId: number; completeAll: boolean; toastMessage: string; toastVisible: boolean }) {
-  const confettiRef = useRef<ConfettiCannon>(null);
-  useEffect(() => {
-    if (celebrationId > 0) confettiRef.current?.start();
-  }, [celebrationId]);
   return (
     <>
-      <ConfettiCannon ref={confettiRef} autoStart={false} count={completeAll ? 250 : 80} origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height - 80 }} fadeOut={completeAll} />
+      {celebrationId > 0 ? <ConfettiCannon key={celebrationId} autoStart count={completeAll ? 250 : 80} origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height - 80 }} fadeOut={completeAll} /> : null}
       {completeAll && toastVisible ? <View pointerEvents="none" style={styles.overlay}><Text style={styles.overlayText}>今日のアクション全達成！🎉</Text></View> : null}
       <Toast message={toastMessage} visible={toastVisible} />
     </>
