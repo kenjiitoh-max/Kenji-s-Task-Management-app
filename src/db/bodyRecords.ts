@@ -6,6 +6,10 @@ export function listBodyRecords(db: Db, limit = 30): BodyRecord[] {
   return db.getAllSync<BodyRecord>('SELECT * FROM body_records ORDER BY date DESC LIMIT ?', limit);
 }
 
+export function listBodyRecordsAsc(db: Db): BodyRecord[] {
+  return db.getAllSync<BodyRecord>('SELECT * FROM body_records ORDER BY date ASC');
+}
+
 export function getLatestBodyRecord(db: Db): BodyRecord | null {
   return db.getFirstSync<BodyRecord>('SELECT * FROM body_records ORDER BY date DESC LIMIT 1');
 }

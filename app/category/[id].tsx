@@ -87,6 +87,7 @@ export default function CategoryScreen() {
         <Pressable onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} color={palette.text} /></Pressable>
         <View style={[styles.dot, { backgroundColor: category.color }]} />
         <Text style={[styles.title, { color: palette.text }]}>{category.name}</Text>
+        <Pressable accessibilityLabel="履歴を開く" onPress={() => router.push(`/history/${id}`)} style={styles.historyButton}><Ionicons color={palette.text} name="stats-chart-outline" size={22} /></Pressable>
       </View>
       <FlatList
         contentContainerStyle={styles.content}
@@ -120,6 +121,7 @@ const styles = StyleSheet.create({
   empty: { fontSize: 14, marginBottom: 12, marginTop: 2 },
   goals: { flexDirection: 'row', gap: 8, marginBottom: 28 },
   header: { alignItems: 'center', flexDirection: 'row', paddingHorizontal: 18, paddingTop: 15 },
+  historyButton: { padding: 6 },
   safe: { flex: 1 },
   section: { fontSize: 22, fontWeight: '800', marginBottom: 13 },
   title: { fontSize: 22, fontWeight: '800' },
