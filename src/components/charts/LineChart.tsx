@@ -46,7 +46,7 @@ export function LineChart({ points, color, dark, height = 160, unit, markers = [
         })}
         <Polyline fill="none" points={polyline} stroke={color} strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
         {points.map((point, index) => <Circle cx={xFor(index)} cy={yFor(point.y)} fill={palette.card} key={`${point.x}-${index}`} r="3.5" stroke={color} strokeWidth="2" />)}
-        <SvgText fill={color} fontSize="11" fontWeight="bold" x={Math.min(width - padding.right + 3, xFor(points.length - 1) + 5)} y={Math.max(padding.top + 10, yFor(points[points.length - 1].y) - 7)}>{formatValue(points[points.length - 1].y)}</SvgText>
+        <SvgText fill={color} fontSize="11" fontWeight="bold" textAnchor="end" x={width - 2} y={Math.max(padding.top + 10, yFor(points[points.length - 1].y) - 7)}>{formatValue(points[points.length - 1].y)}</SvgText>
         <SvgText fill={palette.muted} fontSize="10" x={padding.left} y={height - 7}>{points[0].x.slice(5).replace('-', '/')}</SvgText>
         <SvgText fill={palette.muted} fontSize="10" textAnchor="end" x={width - padding.right} y={height - 7}>{points[points.length - 1].x.slice(5).replace('-', '/')}</SvgText>
       </Svg> : null}

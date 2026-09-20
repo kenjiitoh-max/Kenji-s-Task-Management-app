@@ -13,7 +13,7 @@ import { Category, BodyRecord } from '../../src/db/types';
 import { getCategory } from '../../src/db/categories';
 import { currentStreak, dailyCompletionCounts, shiftDate, xpTrajectory } from '../../src/growth/history';
 import { Lineage, stageForLevel } from '../../src/growth/levels';
-import { getPalette, radius, shadow } from '../../src/theme';
+import { getPalette, radius, shadow, textOn } from '../../src/theme';
 
 type Period = 30 | 90 | 'all';
 
@@ -72,7 +72,7 @@ export default function HistoryScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.periods}>
-          {([30, 90, 'all'] as Period[]).map((value) => <Pressable key={value} onPress={() => setPeriod(value)} style={[styles.period, { backgroundColor: period === value ? category.color : palette.card }]}><Text style={{ color: period === value ? '#fff' : palette.muted, fontSize: 12, fontWeight: '700' }}>{value === 'all' ? '全期間' : `${value}日`}</Text></Pressable>)}
+          {([30, 90, 'all'] as Period[]).map((value) => <Pressable key={value} onPress={() => setPeriod(value)} style={[styles.period, { backgroundColor: period === value ? category.color : palette.card }]}><Text style={{ color: period === value ? textOn(category.color) : palette.muted, fontSize: 12, fontWeight: '700' }}>{value === 'all' ? '全期間' : `${value}日`}</Text></Pressable>)}
         </View>
         {category.kind === 'weight' ? <>
           <HistoryCard palette={palette} title="体重の推移">
