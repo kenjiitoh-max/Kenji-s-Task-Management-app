@@ -29,7 +29,7 @@ export function BodyStatusCard({ dark, accent, latest, profile, records, onRecor
           <View style={styles.buttons}><Pressable onPress={onRecord} style={[styles.primaryButton, { backgroundColor: accent }]}><Text style={styles.primaryText}>今日の体重を記録</Text></Pressable><Pressable onPress={onEditProfile} style={styles.edit}><Text style={[styles.editText, { color: palette.muted }]}>⚙ 身長・性別</Text></Pressable></View>
         </>
       ) : null}
-      {history.length ? <View style={styles.history}>{history.map((record, index) => { const previous = history[index - 1]; const delta = previous ? record.weight_kg - previous.weight_kg : 0; const height = max === min ? 50 : 24 + ((record.weight_kg - min) / (max - min)) * 36; return <View key={record.id} style={styles.historyItem}><View style={styles.barArea}><View style={[styles.bar, { backgroundColor: accent, height }]} /></View><Text style={[styles.date, { color: palette.muted }]}>{record.date.slice(5).replace('-', '/')}</Text>{index > 0 ? <Text style={[styles.delta, { color: delta <= 0 ? '#6DAA7B' : palette.muted }]}>{delta <= 0 ? '▼' : '▲'}{Math.abs(delta).toFixed(1)}kg</Text> : null}</View>; })}</View> : null}
+      {history.length ? <View style={[styles.history, { borderTopColor: palette.border }]}>{history.map((record, index) => { const previous = history[index - 1]; const delta = previous ? record.weight_kg - previous.weight_kg : 0; const height = max === min ? 50 : 24 + ((record.weight_kg - min) / (max - min)) * 36; return <View key={record.id} style={styles.historyItem}><View style={styles.barArea}><View style={[styles.bar, { backgroundColor: accent, height }]} /></View><Text style={[styles.date, { color: palette.muted }]}>{record.date.slice(5).replace('-', '/')}</Text>{index > 0 ? <Text style={[styles.delta, { color: delta <= 0 ? '#6DAA7B' : palette.muted }]}>{delta <= 0 ? '▼' : '▲'}{Math.abs(delta).toFixed(1)}kg</Text> : null}</View>; })}</View> : null}
     </View>
   );
 }
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 15, fontWeight: '700', marginBottom: 14, textAlign: 'center' },
   fat: { fontSize: 14, marginTop: 3 },
   fatNext: { fontSize: 12, lineHeight: 18, marginTop: 10 },
-  history: { borderTopColor: '#00000010', borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 18, paddingTop: 12 },
+  history: { borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 18, paddingTop: 12 },
   historyItem: { alignItems: 'center', flex: 1 },
   nextBox: { borderRadius: radius.control, padding: 12 },
   nextMessage: { fontSize: 13, lineHeight: 19 },

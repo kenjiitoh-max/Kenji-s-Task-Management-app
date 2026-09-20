@@ -28,7 +28,8 @@ export function CategoryCard({
           <View style={styles.nameRow}>{emoji ? <View style={[styles.emojiCircle, { backgroundColor: `${category.color}33` }]}><Text style={styles.emoji}>{emoji}</Text></View> : null}<Text style={[styles.name, { color: palette.text }]}>{category.name}</Text></View>
           <Ionicons name="chevron-forward" size={20} color={palette.muted} />
         </View>
-        <Text style={[styles.progressText, { color: palette.muted }]}>{subtitle || `${progress.completed}/${progress.total} 完了`}</Text>
+        {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
+        <Text style={[styles.progressText, { color: palette.muted }]}>{progress.completed}/{progress.total} 完了</Text>
         <View style={[styles.track, { backgroundColor: `${category.color}22` }]}>
           <View style={[styles.fill, { backgroundColor: category.color, width: `${ratio * 100}%` }]} />
         </View>
@@ -44,8 +45,9 @@ const styles = StyleSheet.create({
   emojiCircle: { alignItems: 'center', borderRadius: 18, height: 36, justifyContent: 'center', marginRight: 9, width: 36 },
   fill: { borderRadius: 3, height: 6 },
   name: { fontSize: 18, fontWeight: '700' },
-  progressText: { fontSize: 13, marginBottom: 9, marginTop: 12 },
+  progressText: { fontSize: 13, marginBottom: 9, marginTop: 8 },
   nameRow: { alignItems: 'center', flexDirection: 'row', flex: 1 },
   row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  subtitle: { fontSize: 13, marginTop: 8 },
   track: { borderRadius: 3, height: 6, overflow: 'hidden' },
 });
