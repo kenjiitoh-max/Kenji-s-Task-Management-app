@@ -17,23 +17,20 @@ export function upsertGoal(
   description: string,
   targetDate: string | null,
 ): number {
-  const existing = db.getFirstSync<{ id: number }>(
-    'SELECT id FROM goals WHERE category_id = ? AND term = ?',
-    categoryId,
-    term,
-  );
-  if (existing) {
-    db.runSync('UPDATE goals SET description = ?, target_date = ? WHERE id = ?', description.trim(), targetDate || null, existing.id);
-    return existing.id;
-  }
-  return db.runSync(
-    'INSERT INTO goals (category_id, term, description, target_date, created_at) VALUES (?, ?, ?, ?, ?)',
+  const result = db.getFirstSync<{ id: number }>(
+    `INSERT INTO goals (category_id, term, description, target_date, created_at)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(category_id, term) DO UPDATE SET
+       description = excluded.description,
+       target_date = excluded.target_date
+     RETURNING id`,
     categoryId,
     term,
     description.trim(),
     targetDate || null,
     localTimestamp(),
-  ).lastInsertRowId;
+  );
+  return result?.id ?? 0;
 }
 
 export function deleteGoal(db: Db, id: number): void {

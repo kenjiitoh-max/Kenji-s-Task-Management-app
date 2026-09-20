@@ -27,7 +27,8 @@ export function initDatabase(db: Db): void {
       term TEXT NOT NULL CHECK(term IN ('short', 'medium', 'long')),
       description TEXT NOT NULL,
       target_date TEXT,
-      created_at TEXT NOT NULL
+      created_at TEXT NOT NULL,
+      UNIQUE(category_id, term)
     );
     CREATE TABLE IF NOT EXISTS daily_actions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -2,6 +2,8 @@ import { Db } from './Db';
 import { localDate, localTimestamp } from './time';
 import { DailyAction } from './types';
 
+let lastResetDate: string | null = null;
+
 type ActionRow = Omit<DailyAction, 'is_completed'> & { is_completed: number };
 
 const mapAction = (row: ActionRow): DailyAction => ({
@@ -56,4 +58,10 @@ export function resetStaleCompletions(db: Db): void {
     localTimestamp(),
     date,
   );
+}
+
+export function ensureDailyReset(db: Db, today = localDate()): void {
+  if (lastResetDate === today) return;
+  resetStaleCompletions(db);
+  lastResetDate = today;
 }

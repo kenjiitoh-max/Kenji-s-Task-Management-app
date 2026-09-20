@@ -6,6 +6,7 @@ import { CategoryFormModal } from '../src/components/CategoryFormModal';
 import { Fab } from '../src/components/Fab';
 import { createCategory, getCategoryProgress, listCategories } from '../src/db/categories';
 import { getDb } from '../src/db/database';
+import { ensureDailyReset } from '../src/db/dailyActions';
 import { Category } from '../src/db/types';
 import { getPalette } from '../src/theme';
 
@@ -18,6 +19,7 @@ export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const refresh = useCallback(() => {
     const db = getDb();
+    ensureDailyReset(db);
     const items = listCategories(db);
     setCategories(items);
     setProgress(Object.fromEntries(items.map((item) => [item.id, getCategoryProgress(db, item.id)])));

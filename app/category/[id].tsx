@@ -11,7 +11,7 @@ import { GoalFormModal } from '../../src/components/GoalFormModal';
 import { useCelebration } from '../../src/hooks/useCelebration';
 import { getCategory, getCategoryProgress } from '../../src/db/categories';
 import { getDb } from '../../src/db/database';
-import { createDailyAction, deleteDailyAction, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
+import { createDailyAction, deleteDailyAction, ensureDailyReset, listDailyActions, toggleDailyAction } from '../../src/db/dailyActions';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
 import { Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
 import { getPalette } from '../../src/theme';
@@ -30,6 +30,7 @@ export default function CategoryScreen() {
   const celebration = useCelebration();
   const refresh = useCallback(() => {
     const db = getDb();
+    ensureDailyReset(db);
     setCategory(getCategory(db, categoryId));
     setGoals(listGoals(db, categoryId));
     setActions(listDailyActions(db, categoryId));
