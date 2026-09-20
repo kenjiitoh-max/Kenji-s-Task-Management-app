@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, FlatList, Pressable, SafeAreaView, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Celebration } from '../../src/components/Celebration';
 import { DailyActionFormModal } from '../../src/components/DailyActionFormModal';
 import { DailyActionItem } from '../../src/components/DailyActionItem';
