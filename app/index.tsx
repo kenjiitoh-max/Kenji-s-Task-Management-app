@@ -7,7 +7,7 @@ import { CategoryFormModal } from '../src/components/CategoryFormModal';
 import { Fab } from '../src/components/Fab';
 import { QuoteCard } from '../src/components/QuoteCard';
 import { createCategory, getCategoryProgress, listCategories } from '../src/db/categories';
-import { countCompletions, ensureDailyReset } from '../src/db/dailyActions';
+import { countCompletions, ensureDailyReset, listActionStreaks } from '../src/db/dailyActions';
 import { getLatestBodyRecord, getBodyProfile } from '../src/db/bodyRecords';
 import { getDb } from '../src/db/database';
 import { listFavoriteIds, toggleFavorite } from '../src/db/quoteFavorites';
@@ -26,6 +26,7 @@ export default function HomeScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [progress, setProgress] = useState<Record<number, { total: number; completed: number }>>({});
   const [subtitles, setSubtitles] = useState<Record<number, { subtitle?: string; emoji?: string }>>({});
+  const [streaks, setStreaks] = useState<Record<number, { id: number; title: string; streak: number }[]>>({});
   const [favoriteQuote, setFavoriteQuote] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const refresh = useCallback(() => {
@@ -34,6 +35,7 @@ export default function HomeScreen() {
     const items = listCategories(db);
     setCategories(items);
     setProgress(Object.fromEntries(items.map((item) => [item.id, getCategoryProgress(db, item.id)])));
+    setStreaks(Object.fromEntries(items.map((item) => [item.id, listActionStreaks(db, item.id)])));
     const profile = getBodyProfile(db);
     const latest = getLatestBodyRecord(db);
     setFavoriteQuote(listFavoriteIds(db).includes(quoteForDate(localDate()).id));
@@ -56,7 +58,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
       <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View></View>
-      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} />} renderItem={({ item }) => <CategoryCard category={item} dark={dark} emoji={subtitles[item.id]?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} subtitle={subtitles[item.id]?.subtitle} />} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
+      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} />} renderItem={({ item }) => <CategoryCard category={item} dark={dark} emoji={subtitles[item.id]?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={subtitles[item.id]?.subtitle} />} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
       <Fab color={palette.primary} onPress={() => setModalVisible(true)} />
       <CategoryFormModal dark={dark} onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
     </SafeAreaView>

@@ -1,3 +1,4 @@
+import { currentStreak } from '../growth/history';
 import { Db } from './Db';
 import { localDate, localTimestamp } from './time';
 import { DailyAction } from './types';
@@ -71,6 +72,24 @@ export function listCompletionDates(db: Db, categoryId: number): string[] {
     'SELECT completed_at FROM completion_log WHERE category_id = ? ORDER BY completed_at ASC, id ASC',
     categoryId,
   ).map((row) => row.completed_at);
+}
+
+export function listActionCompletionDates(db: Db, actionId: number): string[] {
+  return db.getAllSync<{ completed_at: string }>(
+    'SELECT completed_at FROM completion_log WHERE action_id = ? ORDER BY completed_at ASC, id ASC',
+    actionId,
+  ).map((row) => row.completed_at);
+}
+
+export function listActionStreaks(db: Db, categoryId: number): { id: number; title: string; streak: number }[] {
+  const today = localDate();
+  return listDailyActions(db, categoryId)
+    .map((action) => ({
+      id: action.id,
+      title: action.title,
+      streak: currentStreak(listActionCompletionDates(db, action.id), today),
+    }))
+    .sort((a, b) => b.streak - a.streak || a.id - b.id);
 }
 
 export function resetStaleCompletions(db: Db): void {

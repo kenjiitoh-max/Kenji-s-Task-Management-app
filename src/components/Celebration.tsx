@@ -3,10 +3,10 @@ import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { Toast } from './Toast';
 
-export function Celebration({ celebrationId, completeAll, toastMessage, toastVisible }: { celebrationId: number; completeAll: boolean; toastMessage: string; toastVisible: boolean }) {
+export function Celebration({ celebrationId, completeAll, big, toastMessage, toastVisible }: { celebrationId: number; completeAll: boolean; big?: boolean; toastMessage: string; toastVisible: boolean }) {
   return (
     <>
-      {celebrationId > 0 ? <ConfettiCannon key={celebrationId} autoStart count={completeAll ? 250 : 80} origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height - 80 }} fadeOut /> : null}
+      {celebrationId > 0 ? <ConfettiCannon key={celebrationId} autoStart count={completeAll ? 250 : big ? 200 : 80} origin={{ x: Dimensions.get('window').width / 2, y: Dimensions.get('window').height - 80 }} fadeOut /> : null}
       {completeAll && toastVisible ? <View pointerEvents="none" style={styles.overlay}><Text style={styles.overlayText}>今日のアクション全達成！🎉</Text></View> : null}
       <Toast message={toastMessage} visible={toastVisible} />
     </>

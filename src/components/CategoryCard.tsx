@@ -11,6 +11,7 @@ export function CategoryCard({
   onPress,
   subtitle,
   emoji,
+  streaks,
 }: {
   category: Category;
   progress: { total: number; completed: number };
@@ -18,6 +19,7 @@ export function CategoryCard({
   onPress: () => void;
   subtitle?: string;
   emoji?: string;
+  streaks?: { id: number; title: string; streak: number }[];
 }) {
   const palette = getPalette(dark ? 'dark' : 'light');
   const ratio = progress.total ? progress.completed / progress.total : 0;
@@ -29,6 +31,20 @@ export function CategoryCard({
           <Ionicons name="chevron-forward" size={20} color={palette.muted} />
         </View>
         {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
+        {(() => {
+          const active = (streaks ?? []).filter((entry) => entry.streak > 0);
+          if (!active.length) return null;
+          return (
+            <View style={styles.streaks}>
+              {active.slice(0, 3).map((entry) => (
+                <View key={entry.id} style={[styles.streakChip, { backgroundColor: `${category.color}22` }]}>
+                  <Text numberOfLines={1} style={[styles.streakText, { color: palette.text }]}>🔥{entry.streak}日 {entry.title}</Text>
+                </View>
+              ))}
+              {active.length > 3 ? <View style={[styles.streakChip, { backgroundColor: `${category.color}22` }]}><Text style={[styles.streakText, { color: palette.text }]}>+{active.length - 3}</Text></View> : null}
+            </View>
+          );
+        })()}
         <Text style={[styles.progressText, { color: palette.muted }]}>{progress.completed}/{progress.total} 完了</Text>
         <View style={[styles.track, { backgroundColor: `${category.color}22` }]}>
           <View style={[styles.fill, { backgroundColor: category.color, width: `${ratio * 100}%` }]} />
@@ -48,6 +64,9 @@ const styles = StyleSheet.create({
   progressText: { fontSize: 13, marginBottom: 9, marginTop: 8 },
   nameRow: { alignItems: 'center', flexDirection: 'row', flex: 1 },
   row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  streakChip: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
+  streakText: { fontSize: 12 },
+  streaks: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   subtitle: { fontSize: 13, marginTop: 8 },
   track: { borderRadius: 3, height: 6, overflow: 'hidden' },
 });
