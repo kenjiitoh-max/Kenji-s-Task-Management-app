@@ -60,3 +60,15 @@ __tests__/             SQLiteデータ層テスト
 - `daily_actions`: カテゴリーに紐づくアクション、完了状態、完了日時、更新日時
 
 アプリ起動時にテーブルを作成し、初回起動だけ3つのカテゴリーをシードします。外部サーバーにはデータを送信しません。
+
+## iPhone 実機へのインストール (EAS Build)
+
+常用する場合は EAS Build の internal distribution で `.ipa` を作り、リンクから iPhone にインストールします。Apple Developer Program への登録と Expo アカウントが必要です。
+
+```bash
+npm install -g eas-cli   # 未インストールの場合
+eas login
+eas build --profile preview --platform ios
+```
+
+初回は Apple ID でのログインと、インストールする iPhone の登録 (`eas device:create` の案内が表示されます) を求められます。ビルド完了後に表示されるリンクを iPhone の Safari で開くとインストールできます。アプリを更新するときは同じコマンドを再実行します。
