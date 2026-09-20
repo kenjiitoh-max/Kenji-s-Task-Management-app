@@ -7,12 +7,15 @@ import { Celebration } from '../../src/components/Celebration';
 import { BodyProfileModal } from '../../src/components/BodyProfileModal';
 import { BodyRecordModal } from '../../src/components/BodyRecordModal';
 import { BodyStatusCard } from '../../src/components/BodyStatusCard';
+import { BookshelfCard } from '../../src/components/BookshelfCard';
 import { CharacterCard } from '../../src/components/CharacterCard';
 import { DailyActionFormModal } from '../../src/components/DailyActionFormModal';
 import { DailyActionItem } from '../../src/components/DailyActionItem';
 import { Fab } from '../../src/components/Fab';
 import { GoalCard } from '../../src/components/GoalCard';
 import { GoalFormModal } from '../../src/components/GoalFormModal';
+import { WorkoutCard } from '../../src/components/WorkoutCard';
+import { WorkoutLogModal } from '../../src/components/WorkoutLogModal';
 import { useCelebration } from '../../src/hooks/useCelebration';
 import { getCategory, getCategoryProgress } from '../../src/db/categories';
 import { getDb } from '../../src/db/database';
@@ -21,7 +24,8 @@ import { getBodyProfile, getLatestBodyRecord, listBodyRecords, saveBodyProfile, 
 import { localDate } from '../../src/db/time';
 import { subscribe } from '../../src/db/dailyResetEvents';
 import { deleteGoal, listGoals, upsertGoal } from '../../src/db/goals';
-import { BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm } from '../../src/db/types';
+import { BodyProfile, BodyRecord, Category, DailyAction, Goal, GoalTerm, WorkoutSet } from '../../src/db/types';
+import { addWorkoutSet, deleteWorkoutSet, ExerciseBest, getExerciseBest, getLastSet, isPersonalRecord, listExerciseBests, listWorkoutSets, NewWorkoutSet, recentExercises } from '../../src/db/workouts';
 import { getLevelState, isLineage } from '../../src/growth/levels';
 import { randomQuote } from '../../src/quotes/dailyQuote';
 import { getPalette } from '../../src/theme';
@@ -47,6 +51,10 @@ export default function CategoryScreen() {
   const [records, setRecords] = useState<BodyRecord[]>([]);
   const [profile, setProfile] = useState<BodyProfile>({ height_cm: null, sex: 'male' });
   const [completions, setCompletions] = useState(0);
+  const [workoutModal, setWorkoutModal] = useState(false);
+  const [todaySets, setTodaySets] = useState<WorkoutSet[]>([]);
+  const [bests, setBests] = useState<ExerciseBest[]>([]);
+  const [recent, setRecent] = useState<string[]>([]);
   const [pulseKey, setPulseKey] = useState(0);
   const celebration = useCelebration();
   const refresh = useCallback(() => {
@@ -60,11 +68,29 @@ export default function CategoryScreen() {
     setProfile(getBodyProfile(db));
     const current = getCategory(db, categoryId);
     setCompletions(isLineage(current?.kind) ? countCompletions(db, categoryId) : 0);
+    if (current?.kind === 'athlete') {
+      setTodaySets(listWorkoutSets(db, categoryId));
+      setBests(listExerciseBests(db, categoryId));
+      setRecent(recentExercises(db, categoryId));
+    }
   }, [categoryId]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
   useEffect(() => subscribe(refresh), [refresh]);
   if (!category) return null;
   const goalFor = (term: GoalTerm) => goals.find((goal) => goal.term === term);
+  const logWorkout = (set: NewWorkoutSet) => {
+    const db = getDb();
+    const previousBest = getExerciseBest(db, categoryId, set.exercise);
+    const before = getLevelState('athlete', countCompletions(db, categoryId));
+    const { firstOfDay } = addWorkoutSet(db, categoryId, set);
+    const after = getLevelState('athlete', countCompletions(db, categoryId));
+    refresh();
+    setPulseKey((key) => key + 1);
+    const record = isPersonalRecord(previousBest, set);
+    const levelMessage = after.level > before.level ? after.stage.name !== before.stage.name ? `進化！ ${after.stage.emoji} ${after.stage.name} になった！` : `レベルアップ！ Lv.${after.level}` : undefined;
+    const message = levelMessage ?? (record ? `自己ベスト更新！ ${set.exercise} ${set.weight_kg}kg` : firstOfDay ? '今日のトレ開始！ +10 XP' : undefined);
+    if (message) celebration.celebrate(false, message);
+  };
   const toggle = (action: DailyAction) => {
     const db = getDb();
     const before = isLineage(category.kind) ? getLevelState(category.kind, countCompletions(db, categoryId)) : null;
@@ -96,6 +122,8 @@ export default function CategoryScreen() {
         ListHeaderComponent={
           <View>
             {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} latest={latest} onEditProfile={() => setProfileModal(true)} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
+            {category.kind === 'reader' ? <BookshelfCard accent={category.color} categoryId={categoryId} dark={dark} onPress={() => router.push(`/books/${id}`)} /> : null}
+            {category.kind === 'athlete' ? <WorkoutCard accent={category.color} bests={bests} dark={dark} onDelete={(set) => Alert.alert('削除', `${set.exercise} の記録を削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteWorkoutSet(getDb(), set.id); refresh(); } }])} onLog={() => setWorkoutModal(true)} today={todaySets} /> : null}
             <Text style={[styles.section, { color: palette.text }]}>ゴール</Text>
             <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard dark={dark} goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
             <Text style={[styles.section, { color: palette.text }]}>今日のデイリーアクション</Text>
@@ -106,6 +134,7 @@ export default function CategoryScreen() {
       />
       <Fab color={category.color} onPress={() => setActionModal(true)} />
       <DailyActionFormModal dark={dark} onClose={() => setActionModal(false)} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} visible={actionModal} />
+      {category.kind === 'athlete' ? <WorkoutLogModal bestFor={(exercise) => getExerciseBest(getDb(), categoryId, exercise)} dark={dark} lastSet={(exercise) => getLastSet(getDb(), categoryId, exercise)} onClose={() => setWorkoutModal(false)} onSave={logWorkout} recent={recent} visible={workoutModal} /> : null}
       <BodyRecordModal dark={dark} onClose={() => setRecordModal(false)} onSave={(date, weight, fat) => { upsertBodyRecord(getDb(), date, weight, fat); refresh(); }} record={records.find((record) => record.date === localDate()) || null} visible={recordModal} />
       <BodyProfileModal dark={dark} onClose={() => setProfileModal(false)} onSave={(height, sex) => { saveBodyProfile(getDb(), { height_cm: height, sex }); refresh(); }} profile={profile} visible={profileModal} />
       {goalTerm ? <GoalFormModal dark={dark} goal={goalFor(goalTerm)} onClose={() => setGoalTerm(null)} onDelete={() => { const goal = goalFor(goalTerm); if (goal) deleteGoal(getDb(), goal.id); refresh(); }} onSave={(description, date) => { upsertGoal(getDb(), categoryId, goalTerm, description, date); refresh(); }} term={goalTerm} visible /> : null}
