@@ -1,8 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Category } from '../db/types';
 import { getPalette, radius, shadow } from '../theme';
+
+function LivingEmoji({ emoji, color, seed }: { emoji: string; color: string; seed: number }) {
+  const bob = useSharedValue(0);
+  const tilt = useSharedValue(0);
+  const squash = useSharedValue(1);
+  useEffect(() => {
+    const delay = (seed % 5) * 220;
+    bob.value = withDelay(delay, withRepeat(withSequence(withTiming(-4, { duration: 1400, easing: Easing.inOut(Easing.sin) }), withTiming(0, { duration: 1400, easing: Easing.inOut(Easing.sin) })), -1));
+    tilt.value = withDelay(delay, withRepeat(withSequence(withTiming(-8, { duration: 1700, easing: Easing.inOut(Easing.sin) }), withTiming(8, { duration: 1700, easing: Easing.inOut(Easing.sin) })), -1, true));
+    squash.value = withDelay(delay + 900, withRepeat(withSequence(withTiming(1, { duration: 2600 }), withTiming(1.18, { duration: 160 }), withTiming(0.92, { duration: 160 }), withTiming(1, { duration: 220 })), -1));
+  }, [bob, tilt, squash, seed]);
+  const style = useAnimatedStyle(() => ({ transform: [{ translateY: bob.value }, { rotate: `${tilt.value}deg` }, { scale: squash.value }] }));
+  return (
+    <View style={[styles.emojiCircle, { backgroundColor: `${color}33` }]}>
+      <Animated.Text style={[styles.emoji, style]}>{emoji}</Animated.Text>
+    </View>
+  );
+}
 
 export function CategoryCard({
   category,
@@ -11,6 +30,7 @@ export function CategoryCard({
   onPress,
   subtitle,
   emoji,
+  character,
   streaks,
 }: {
   category: Category;
@@ -19,6 +39,7 @@ export function CategoryCard({
   onPress: () => void;
   subtitle?: string;
   emoji?: string;
+  character?: React.ReactNode;
   streaks?: { id: number; title: string; streak: number }[];
 }) {
   const palette = getPalette(dark ? 'dark' : 'light');
@@ -28,7 +49,7 @@ export function CategoryCard({
       <View pointerEvents="none" style={[styles.tint, { backgroundColor: category.color }]} />
       <View style={styles.content}>
         <View style={styles.row}>
-          <View style={styles.nameRow}>{emoji ? <View style={[styles.emojiCircle, { backgroundColor: `${category.color}33` }]}><Text style={styles.emoji}>{emoji}</Text></View> : null}<Text style={[styles.name, { color: palette.text }]}>{category.name}</Text></View>
+          <View style={styles.nameRow}>{character ? <View style={styles.character}>{character}</View> : emoji ? <LivingEmoji color={category.color} emoji={emoji} seed={category.id} /> : null}<Text style={[styles.name, { color: palette.text }]}>{category.name}</Text></View>
           <Ionicons name="chevron-forward" size={20} color={category.color} />
         </View>
         {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
@@ -57,9 +78,10 @@ export function CategoryCard({
 
 const styles = StyleSheet.create({
   card: { borderRadius: radius.card, borderWidth: 1, marginBottom: 14, overflow: 'hidden' },
+  character: { marginRight: 9 },
   content: { flex: 1, padding: 18 },
   emoji: { fontSize: 22 },
-  emojiCircle: { alignItems: 'center', borderRadius: 18, height: 36, justifyContent: 'center', marginRight: 9, width: 36 },
+  emojiCircle: { alignItems: 'center', borderRadius: 22, height: 44, justifyContent: 'center', marginRight: 9, width: 44 },
   fill: { borderRadius: 3, height: 6 },
   name: { fontSize: 18, fontWeight: '700' },
   progressText: { fontSize: 13, marginBottom: 9, marginTop: 8 },
