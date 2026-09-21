@@ -28,6 +28,7 @@ export function CategoryCard({
   progress,
   dark,
   onPress,
+  onLongPress,
   subtitle,
   emoji,
   character,
@@ -37,6 +38,7 @@ export function CategoryCard({
   progress: { total: number; completed: number };
   dark: boolean;
   onPress: () => void;
+  onLongPress?: () => void;
   subtitle?: string;
   emoji?: string;
   character?: React.ReactNode;
@@ -45,7 +47,7 @@ export function CategoryCard({
   const palette = getPalette(dark ? 'dark' : 'light');
   const ratio = progress.total ? progress.completed / progress.total : 0;
   return (
-    <Pressable onPress={onPress} style={[styles.card, { backgroundColor: palette.card, borderColor: category.color }, shadow]}>
+    <Pressable onLongPress={onLongPress} onPress={onPress} style={[styles.card, { backgroundColor: palette.card, borderColor: category.color }, shadow]}>
       <View pointerEvents="none" style={[styles.tint, { backgroundColor: category.color }]} />
       <View style={styles.content}>
         <View style={styles.row}>
