@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryCard } from '../src/components/CategoryCard';
 import { CategoryFormModal } from '../src/components/CategoryFormModal';
@@ -23,7 +23,7 @@ import { localDate } from '../src/db/time';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const dark = useColorScheme() === 'dark';
+  const dark = true;
   const palette = getPalette(dark ? 'dark' : 'light');
   const [categories, setCategories] = useState<Category[]>([]);
   const [progress, setProgress] = useState<Record<number, { total: number; completed: number }>>({});
