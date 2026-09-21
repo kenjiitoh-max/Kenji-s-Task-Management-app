@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { searchBooks } from '../books/search';
+import { BookSearchError, searchBooks, SearchFailure } from '../books/search';
 import { bookStatusLabels, bookStatuses, NewBook } from '../db/books';
 import { BookStatus } from '../db/types';
 import { getPalette, textOn } from '../theme';
 import { BookCover } from './BookCover';
 import { ModalShell } from './ModalShell';
+
+const errorMessages: Record<SearchFailure, string> = {
+  quota: '検索サービスが混み合っています (1日の上限)。時間をおくか、下のボタンでタイトルだけ追加できます。',
+  offline: 'インターネットに接続できません。接続を確認するか、下のボタンでタイトルだけ追加できます。',
+  failed: '検索できませんでした。下のボタンでタイトルだけ追加できます。',
+};
 
 export function BookSearchModal({ visible, dark, onClose, onAdd }: { visible: boolean; dark: boolean; onClose: () => void; onAdd: (book: NewBook, status: BookStatus) => void }) {
   const palette = getPalette(dark ? 'dark' : 'light');
@@ -18,7 +24,14 @@ export function BookSearchModal({ visible, dark, onClose, onAdd }: { visible: bo
     if (!query.trim()) return;
     setLoading(true);
     setError(null);
-    try { setResults(await searchBooks(query)); } catch { setError('検索できませんでした。ネット接続を確認してください。'); } finally { setLoading(false); }
+    try {
+      setResults(await searchBooks(query));
+    } catch (caught) {
+      const kind = caught instanceof BookSearchError ? caught.kind : 'failed';
+      setError(errorMessages[kind]);
+    } finally {
+      setLoading(false);
+    }
   };
   const addManually = () => { if (query.trim()) { onAdd({ title: query.trim(), authors: null, cover_url: null, external_id: null }, status); close(); } };
   const close = () => { setQuery(''); setResults([]); setError(null); onClose(); };
