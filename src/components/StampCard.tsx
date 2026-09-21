@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CategoryKind } from '../db/types';
 import { currentStreak } from '../growth/history';
 import { earnedMilestones, MILESTONES, nextMilestone, stampDays, streakEndingAt } from '../growth/stamps';
-import { getPalette, radius, shadow } from '../theme';
+import { cardSurface, getPalette, radius, shadow } from '../theme';
 import { StampBadge } from './StampBadge';
 
 export function StampCard({ dark, accent, kind, dates, today, pulseKey }: {
@@ -20,7 +20,7 @@ export function StampCard({ dark, accent, kind, dates, today, pulseKey }: {
   const next = nextMilestone(streak);
   const earned = new Set(earnedMilestones(dates).map((milestone) => milestone.days));
   return (
-    <View style={[styles.card, { backgroundColor: palette.card }, shadow]}>
+    <View style={[styles.card, cardSurface(palette), shadow]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: palette.text }]}>スタンプ</Text>
         <Text style={[styles.streak, { color: palette.text }]}>{streak > 0 ? `🔥 ${streak}日連続` : '今日から始めよう'}</Text>

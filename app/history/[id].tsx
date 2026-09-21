@@ -13,7 +13,7 @@ import { Category, BodyRecord } from '../../src/db/types';
 import { getCategory } from '../../src/db/categories';
 import { currentStreak, dailyCompletionCounts, shiftDate, xpTrajectory } from '../../src/growth/history';
 import { isLineage, stageForLevel } from '../../src/growth/levels';
-import { getPalette, radius, shadow, textOn } from '../../src/theme';
+import { cardSurface, getPalette, radius, shadow, textOn } from '../../src/theme';
 
 type Period = 30 | 90 | 'all';
 
@@ -97,7 +97,7 @@ export default function HistoryScreen() {
 }
 
 function HistoryCard({ children, palette, title }: { children: React.ReactNode; palette: ReturnType<typeof getPalette>; title: string }) {
-  return <View style={[styles.card, { backgroundColor: palette.card }, shadow]}><Text style={[styles.cardTitle, { color: palette.text }]}>{title}</Text>{children}</View>;
+  return <View style={[styles.card, cardSurface(palette), shadow]}><Text style={[styles.cardTitle, { color: palette.text }]}>{title}</Text>{children}</View>;
 }
 
 const styles = StyleSheet.create({

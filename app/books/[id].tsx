@@ -14,7 +14,7 @@ import { getDb } from '../../src/db/database';
 import { Book, BookStatus, Category } from '../../src/db/types';
 import { getLevelState } from '../../src/growth/levels';
 import { useCelebration } from '../../src/hooks/useCelebration';
-import { getPalette, radius, shadow } from '../../src/theme';
+import { cardSurface, getPalette, radius, shadow } from '../../src/theme';
 
 const shelfEmoji: Record<BookStatus, string> = { reading: '📖', want: '🔖', done: '✅' };
 
@@ -63,7 +63,7 @@ export default function BookshelfScreen() {
         {(['reading', 'want', 'done'] as BookStatus[]).map((status) => {
           const shelf = books.filter((book) => book.status === status);
           return (
-            <View key={status} style={[styles.shelf, shadow, { backgroundColor: palette.card }]}>
+            <View key={status} style={[styles.shelf, shadow, cardSurface(palette)]}>
               <Text style={[styles.shelfTitle, { color: palette.text }]}>{shelfEmoji[status]} {bookStatusLabels[status]} <Text style={{ color: palette.muted }}>{shelf.length}</Text></Text>
               {shelf.length === 0 ? <Text style={[styles.empty, { color: palette.muted }]}>{status === 'done' ? '読み終えた本がここに並びます。' : '右下の＋から本を追加しましょう。'}</Text> : (
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>

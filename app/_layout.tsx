@@ -1,14 +1,13 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, AppState, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, AppState, View } from 'react-native';
 import { getDb, initDatabase, seedCategories } from '../src/db/database';
 import { ensureDailyReset } from '../src/db/dailyActions';
 import { emit } from '../src/db/dailyResetEvents';
 import { localDate } from '../src/db/time';
 
 export default function RootLayout() {
-  const scheme = useColorScheme();
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const db = getDb();
@@ -35,5 +34,5 @@ export default function RootLayout() {
     };
   }, []);
   if (!ready) return <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}><ActivityIndicator /></View>;
-  return <><StatusBar style={scheme === 'dark' ? 'light' : 'dark'} /><Stack screenOptions={{ headerShown: false }} /></>;
+  return <><StatusBar style="light" /><Stack screenOptions={{ headerShown: false }} /></>;
 }

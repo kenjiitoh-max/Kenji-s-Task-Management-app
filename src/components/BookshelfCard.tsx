@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { countBooksByStatus, listBooks } from '../db/books';
 import { getDb } from '../db/database';
 import { Book, BookStatus } from '../db/types';
-import { getPalette, radius, shadow } from '../theme';
+import { cardSurface, getPalette, radius, shadow } from '../theme';
 import { BookCover } from './BookCover';
 
 export function BookshelfCard({ dark, accent, categoryId, onPress }: { dark: boolean; accent: string; categoryId: number; onPress: () => void }) {
@@ -18,7 +18,7 @@ export function BookshelfCard({ dark, accent, categoryId, onPress }: { dark: boo
     setCounts(countBooksByStatus(db, categoryId));
   }, [categoryId]));
   return (
-    <Pressable accessibilityLabel="本棚を開く" onPress={onPress} style={[styles.card, shadow, { backgroundColor: palette.card }]}>
+    <Pressable accessibilityLabel="本棚を開く" onPress={onPress} style={[styles.card, shadow, cardSurface(palette)]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: palette.text }]}>📚 本棚</Text>
         <Ionicons color={palette.muted} name="chevron-forward" size={20} />

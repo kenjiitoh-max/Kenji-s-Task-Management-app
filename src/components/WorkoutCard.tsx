@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { WorkoutSet } from '../db/types';
 import { ExerciseBest } from '../db/workouts';
-import { getPalette, radius, shadow, textOn } from '../theme';
+import { cardSurface, getPalette, radius, shadow, textOn } from '../theme';
 
 export function WorkoutCard({ dark, accent, today, bests, onLog, onDelete }: {
   dark: boolean;
@@ -15,7 +15,7 @@ export function WorkoutCard({ dark, accent, today, bests, onLog, onDelete }: {
   const palette = getPalette(dark ? 'dark' : 'light');
   const volume = today.reduce((sum, set) => sum + set.weight_kg * set.reps * set.sets, 0);
   return (
-    <View style={[styles.card, shadow, { backgroundColor: palette.card }]}>
+    <View style={[styles.card, shadow, cardSurface(palette)]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: palette.text }]}>🏋️ 今日のトレ</Text>
         <Pressable accessibilityLabel="種目を記録" onPress={onLog} style={[styles.logButton, { backgroundColor: accent }]}><Text style={[styles.logText, { color: textOn(accent) }]}>＋ 記録</Text></Pressable>
