@@ -105,6 +105,7 @@ export function initDatabase(db: Db): void {
   migrateCategoryKind(db);
   addColumnIfMissing(db, 'completion_log', 'book_id', 'INTEGER');
   addColumnIfMissing(db, 'completion_log', 'workout_date', 'TEXT');
+  addColumnIfMissing(db, 'categories', 'sort_order', 'INTEGER NOT NULL DEFAULT 0');
 }
 
 function addColumnIfMissing(db: Db, table: string, column: string, type: string): void {
