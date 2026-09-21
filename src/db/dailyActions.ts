@@ -92,6 +92,13 @@ export function listActionStreaks(db: Db, categoryId: number): { id: number; tit
     .sort((a, b) => b.streak - a.streak || a.id - b.id);
 }
 
+export function categoryStreak(db: Db, categoryId: number, kind: string | null, today = localDate()): number {
+  const dates = listCompletionDates(db, categoryId);
+  if (kind === 'weight') dates.push(...db.getAllSync<{ date: string }>('SELECT date FROM body_records').map((row) => row.date));
+  if (kind === 'athlete') dates.push(...db.getAllSync<{ date: string }>('SELECT date FROM workout_sets WHERE category_id = ?', categoryId).map((row) => row.date));
+  return currentStreak(dates, today);
+}
+
 export function resetStaleCompletions(db: Db): void {
   const date = `${localDate()}%`;
   db.runSync(

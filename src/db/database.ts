@@ -114,7 +114,8 @@ function addColumnIfMissing(db: Db, table: string, column: string, type: string)
   }
 }
 
-const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer', 読書: 'reader', 筋トレ: 'athlete', 営業: 'sales' };
+const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer', 読書: 'reader', 筋トレ: 'athlete', 営業: 'sales', English: 'bird', Reading: 'reader', Workout: 'athlete', Sales: 'sales' };
+const englishNames: [string, string][] = [['英語', 'English'], ['読書', 'Reading'], ['筋トレ', 'Workout'], ['営業', 'Sales']];
 const legacySeedColors: [string, string, string][] = [
   ['体重管理', '#F97362', '#F8B7A8'],
   ['英語', '#3B82F6', '#A9C9F5'],
@@ -127,10 +128,10 @@ const pastelSeedColors: [string, string, string][] = [
 ];
 
 const extraSeedCategories: [string, string, CategoryKind][] = [
-  ['読書', '#9F7AEA', 'reader'],
-  ['筋トレ', '#E2C069', 'athlete'],
+  ['Reading', '#9F7AEA', 'reader'],
+  ['Workout', '#E2C069', 'athlete'],
 ];
-const salesSeedCategories: [string, string, CategoryKind][] = [['営業', '#D4A537', 'sales']];
+const salesSeedCategories: [string, string, CategoryKind][] = [['Sales', '#D4A537', 'sales']];
 
 function addMissingCategories(db: Db, key: string, seeds: [string, string, CategoryKind][]): void {
   const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
@@ -160,6 +161,16 @@ function migrateSeedColors(db: Db, key: string, mapping: [string, string, string
   );
 }
 
+function migrateEnglishNames(db: Db): void {
+  const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', 'category_names_en');
+  if (done?.value === '1') return;
+  for (const [from, to] of englishNames) {
+    const exists = db.getFirstSync<{ id: number }>('SELECT id FROM categories WHERE name = ?', to);
+    if (!exists) db.runSync('UPDATE categories SET name = ? WHERE name = ?', to, from);
+  }
+  db.runSync("INSERT INTO settings (key, value) VALUES ('category_names_en', '1') ON CONFLICT(key) DO UPDATE SET value = excluded.value");
+}
+
 function migrateCategoryKind(db: Db): void {
   const columns = db.getAllSync<{ name: string }>('PRAGMA table_info(categories)');
   if (!columns.some((column) => column.name === 'kind')) {
@@ -170,6 +181,7 @@ function migrateCategoryKind(db: Db): void {
   }
   migrateSeedColors(db, 'seed_colors_migrated', legacySeedColors);
   migrateSeedColors(db, 'seed_colors_migrated_v2', pastelSeedColors);
+  migrateEnglishNames(db);
   addMissingCategories(db, 'seed_categories_v2', extraSeedCategories);
   addMissingCategories(db, 'seed_categories_v3', salesSeedCategories);
 }
@@ -180,7 +192,7 @@ export function seedCategories(db: Db): void {
   const now = localTimestamp();
   const seeds: [string, string, CategoryKind][] = [
     ['体重管理', '#D4A537', 'weight'],
-    ['英語', '#8B5FC7', 'bird'],
+    ['English', '#8B5FC7', 'bird'],
     ['Devin', '#B08BE0', 'engineer'],
     ...extraSeedCategories,
     ...salesSeedCategories,
