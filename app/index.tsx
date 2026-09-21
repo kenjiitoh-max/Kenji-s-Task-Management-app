@@ -3,12 +3,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryCard } from '../src/components/CategoryCard';
+import { KobeJerseys } from '../src/components/KobeJerseys';
 import { CategoryFormModal } from '../src/components/CategoryFormModal';
 import { Fab } from '../src/components/Fab';
 import { DealVaultCard } from '../src/components/DealVaultCard';
 import { QuoteCard } from '../src/components/QuoteCard';
 import { createCategory, deleteCategory, getCategoryProgress, listCategories } from '../src/db/categories';
-import { countCompletions, ensureDailyReset, listActionStreaks } from '../src/db/dailyActions';
+import { categoryStreak, countCompletions, ensureDailyReset, listActionStreaks } from '../src/db/dailyActions';
 import { getLatestBodyRecord, getBodyProfile } from '../src/db/bodyRecords';
 import { getDb } from '../src/db/database';
 import { listDeals } from '../src/db/deals';
@@ -31,6 +32,7 @@ export default function HomeScreen() {
   const [progress, setProgress] = useState<Record<number, { total: number; completed: number }>>({});
   const [subtitles, setSubtitles] = useState<Record<number, { subtitle?: string; emoji?: string; bodyStage?: string; lineage?: Lineage; stageIndex?: number }>>({});
   const [streaks, setStreaks] = useState<Record<number, { id: number; title: string; streak: number }[]>>({});
+  const [categoryStreaks, setCategoryStreaks] = useState<Record<number, number>>({});
   const [favoriteQuote, setFavoriteQuote] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -41,6 +43,7 @@ export default function HomeScreen() {
     setCategories(items);
     setProgress(Object.fromEntries(items.map((item) => [item.id, getCategoryProgress(db, item.id)])));
     setStreaks(Object.fromEntries(items.map((item) => [item.id, listActionStreaks(db, item.id)])));
+    setCategoryStreaks(Object.fromEntries(items.map((item) => [item.id, categoryStreak(db, item.id, item.kind)])));
     const profile = getBodyProfile(db);
     const latest = getLatestBodyRecord(db);
     setFavoriteQuote(listFavoriteIds(db).includes(quoteForDate(localDate()).id));
@@ -64,8 +67,8 @@ export default function HomeScreen() {
   const date = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
-      <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View></View>
-      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>} renderItem={({ item }) => { const sub = subtitles[item.id]; const character = sub?.bodyStage ? <BodyAvatar seed={item.id} size={92} stageKey={sub.bodyStage} /> : sub?.lineage ? <LineageAvatar lineage={sub.lineage} seed={item.id} size={92} stageIndex={sub.stageIndex ?? 0} /> : undefined; return <CategoryCard category={item} character={character} dark={dark} emoji={subtitles[item.id]?.emoji} onLongPress={() => confirmDelete(item)} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={subtitles[item.id]?.subtitle} />; }} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
+      <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View><KobeJerseys /></View>
+      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>} renderItem={({ item }) => { const sub = subtitles[item.id]; const character = sub?.bodyStage ? <BodyAvatar seed={item.id} size={92} stageKey={sub.bodyStage} /> : sub?.lineage ? <LineageAvatar lineage={sub.lineage} seed={item.id} size={92} stageIndex={sub.stageIndex ?? 0} /> : undefined; return <CategoryCard category={item} character={character} dark={dark} emoji={subtitles[item.id]?.emoji} onLongPress={() => confirmDelete(item)} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} categoryStreak={categoryStreaks[item.id] ?? 0} subtitle={subtitles[item.id]?.subtitle} />; }} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
       <Fab color={palette.primary} onPress={() => setModalVisible(true)} />
       <CategoryFormModal dark={dark} onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
     </SafeAreaView>
@@ -74,7 +77,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   empty: { fontSize: 15, paddingHorizontal: 8, paddingTop: 40, textAlign: 'center' },
-  header: { paddingHorizontal: 22, paddingTop: 20 },
+  header: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 22, paddingTop: 20 },
   greeting: { fontSize: 14, marginBottom: 2 },
   kicker: { fontSize: 14, marginBottom: 6 },
   list: { padding: 22, paddingBottom: 100 },
