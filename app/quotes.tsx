@@ -56,14 +56,14 @@ export default function QuotesScreen() {
   };
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
-      <View style={styles.header}><Pressable onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} color={palette.text} /></Pressable><Text style={[styles.title, { color: palette.text }]}>言葉のライブラリ</Text></View>
+      <View style={styles.header}><Pressable onPress={() => router.back()} style={styles.back}><Ionicons name="arrow-back" size={24} color={palette.text} /></Pressable><Text style={[styles.title, { color: palette.text }]}>金言のライブラリ</Text></View>
       <FlatList
         ref={listRef}
         contentContainerStyle={styles.content}
         data={filteredQuotes}
         keyExtractor={(quote) => quote.id}
         ListHeaderComponent={<FlatList horizontal contentContainerStyle={styles.filterContent} data={filters} keyExtractor={(item) => item.key} renderItem={({ item }) => <Pressable onPress={() => setFilter(item.key)} style={[styles.filter, { backgroundColor: filter === item.key ? palette.primary : palette.card }]}><Text style={{ color: filter === item.key ? '#fff' : palette.muted, fontSize: 12, fontWeight: '700' }}>{item.label}</Text></Pressable>} showsHorizontalScrollIndicator={false} />}
-        ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>お気に入りの言葉はまだありません。</Text>}
+        ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>お気に入りの金言はまだありません。</Text>}
         onScrollToIndexFailed={({ index, averageItemLength }) => {
           if (hasRetriedScrollRef.current) return;
           hasRetriedScrollRef.current = true;
