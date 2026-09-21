@@ -51,10 +51,13 @@ export function CategoryCard({
       <View pointerEvents="none" style={[styles.tint, { backgroundColor: category.color }]} />
       <View style={styles.content}>
         <View style={styles.row}>
-          <View style={styles.nameRow}>{character ? <View style={styles.character}>{character}</View> : emoji ? <LivingEmoji color={category.color} emoji={emoji} seed={category.id} /> : null}<Text style={[styles.name, { color: palette.text }]}>{category.name}</Text></View>
+          {character ? <View style={[styles.stage, { backgroundColor: `${category.color}1A` }]}>{character}</View> : emoji ? <LivingEmoji color={category.color} emoji={emoji} seed={category.id} /> : null}
+          <View style={styles.titles}>
+            <Text style={[styles.name, { color: palette.text }]}>{category.name}</Text>
+            {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
+          </View>
           <Ionicons name="chevron-forward" size={20} color={category.color} />
         </View>
-        {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
         {(() => {
           const active = (streaks ?? []).filter((entry) => entry.streak > 0);
           if (!active.length) return null;
@@ -80,19 +83,19 @@ export function CategoryCard({
 
 const styles = StyleSheet.create({
   card: { borderRadius: radius.card, borderWidth: 1, marginBottom: 14, overflow: 'hidden' },
-  character: { marginRight: 9 },
   content: { flex: 1, padding: 18 },
   emoji: { fontSize: 22 },
   emojiCircle: { alignItems: 'center', borderRadius: 22, height: 44, justifyContent: 'center', marginRight: 9, width: 44 },
   fill: { borderRadius: 3, height: 6 },
-  name: { fontSize: 18, fontWeight: '700' },
+  name: { fontSize: 20, fontWeight: '700' },
   progressText: { fontSize: 13, marginBottom: 9, marginTop: 8 },
-  nameRow: { alignItems: 'center', flexDirection: 'row', flex: 1 },
-  row: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  row: { alignItems: 'center', flexDirection: 'row' },
+  stage: { alignItems: 'center', borderRadius: 24, height: 104, justifyContent: 'center', marginRight: 14, width: 104 },
+  titles: { flex: 1 },
   streakChip: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4 },
   streakText: { fontSize: 12 },
   streaks: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
-  subtitle: { fontSize: 13, marginTop: 8 },
+  subtitle: { fontSize: 14, marginTop: 6 },
   tint: { bottom: 0, left: 0, opacity: 0.08, position: 'absolute', right: 0, top: 0 },
   track: { borderRadius: 3, height: 6, overflow: 'hidden' },
 });
