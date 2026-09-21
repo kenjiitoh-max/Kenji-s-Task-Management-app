@@ -46,17 +46,18 @@ export function CategoryCard({
 }) {
   const palette = getPalette(dark ? 'dark' : 'light');
   const ratio = progress.total ? progress.completed / progress.total : 0;
+  const accent = palette.gold;
   return (
-    <Pressable onLongPress={onLongPress} onPress={onPress} style={[styles.card, { backgroundColor: palette.card, borderColor: category.color }, shadow]}>
-      <View pointerEvents="none" style={[styles.tint, { backgroundColor: category.color }]} />
+    <Pressable onLongPress={onLongPress} onPress={onPress} style={[styles.card, { backgroundColor: palette.card, borderColor: accent }, shadow]}>
+      <View pointerEvents="none" style={[styles.tint, { backgroundColor: accent }]} />
       <View style={styles.content}>
         <View style={styles.row}>
-          {character ? <View style={[styles.stage, { backgroundColor: `${category.color}1A` }]}>{character}</View> : emoji ? <LivingEmoji color={category.color} emoji={emoji} seed={category.id} /> : null}
+          {character ? <View style={[styles.stage, { backgroundColor: `${accent}1A` }]}>{character}</View> : emoji ? <LivingEmoji color={accent} emoji={emoji} seed={category.id} /> : null}
           <View style={styles.titles}>
             <Text style={[styles.name, { color: palette.text }]}>{category.name}</Text>
             {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
           </View>
-          <Ionicons name="chevron-forward" size={20} color={category.color} />
+          <Ionicons name="chevron-forward" size={20} color={accent} />
         </View>
         {(() => {
           const active = (streaks ?? []).filter((entry) => entry.streak > 0);
@@ -64,17 +65,17 @@ export function CategoryCard({
           return (
             <View style={styles.streaks}>
               {active.slice(0, 3).map((entry) => (
-                <View key={entry.id} style={[styles.streakChip, { backgroundColor: `${category.color}22` }]}>
+                <View key={entry.id} style={[styles.streakChip, { backgroundColor: `${accent}22` }]}>
                   <Text numberOfLines={1} style={[styles.streakText, { color: palette.text }]}>🔥{entry.streak}日 {entry.title}</Text>
                 </View>
               ))}
-              {active.length > 3 ? <View style={[styles.streakChip, { backgroundColor: `${category.color}22` }]}><Text style={[styles.streakText, { color: palette.text }]}>+{active.length - 3}</Text></View> : null}
+              {active.length > 3 ? <View style={[styles.streakChip, { backgroundColor: `${accent}22` }]}><Text style={[styles.streakText, { color: palette.text }]}>+{active.length - 3}</Text></View> : null}
             </View>
           );
         })()}
         <Text style={[styles.progressText, { color: palette.muted }]}>{progress.completed}/{progress.total} 完了</Text>
-        <View style={[styles.track, { backgroundColor: `${category.color}22` }]}>
-          <View style={[styles.fill, { backgroundColor: category.color, width: `${ratio * 100}%` }]} />
+        <View style={[styles.track, { backgroundColor: `${accent}22` }]}>
+          <View style={[styles.fill, { backgroundColor: accent, width: `${ratio * 100}%` }]} />
         </View>
       </View>
     </Pressable>
