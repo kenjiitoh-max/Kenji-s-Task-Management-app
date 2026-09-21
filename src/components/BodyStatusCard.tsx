@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BodyRecord, BodyProfile } from '../db/types';
 import { getBodyStatus, nextFatStep } from '../body/bodyMetrics';
-import { getPalette, radius, shadow, textOn } from '../theme';
+import { cardSurface, getPalette, radius, shadow, textOn } from '../theme';
 
 export function BodyStatusCard({ dark, accent, latest, profile, records, onRecord, onEditProfile, onImportHealth, importing }: {
   dark: boolean;
@@ -21,7 +21,7 @@ export function BodyStatusCard({ dark, accent, latest, profile, records, onRecor
   const max = Math.max(...history.map((record) => record.weight_kg));
   const status = latest && profile.height_cm ? getBodyStatus(latest.weight_kg, latest.body_fat_pct, profile.height_cm, profile.sex) : null;
   return (
-    <View style={[styles.card, { backgroundColor: palette.card }, shadow]}>
+    <View style={[styles.card, cardSurface(palette), shadow]}>
       {!profile.height_cm ? <View style={styles.empty}><Text style={styles.emptyEmoji}>📏</Text><Text style={[styles.emptyTitle, { color: palette.text }]}>身長を設定するとBMIとステージが表示されます</Text><ProfileButton palette={palette} onPress={onEditProfile} /></View> : !latest ? <View style={styles.empty}><Text style={styles.emptyEmoji}>⚖️</Text><Text style={[styles.emptyTitle, { color: palette.text }]}>最初の体重を記録しましょう</Text><Pressable onPress={onRecord} style={[styles.primaryButton, { backgroundColor: accent }]}><Text style={[styles.primaryText, { color: textOn(accent) }]}>今日の体重を記録</Text></Pressable>{onImportHealth ? <Pressable disabled={importing} onPress={onImportHealth} style={[styles.healthButton, { backgroundColor: `${accent}18`, opacity: importing ? 0.6 : 1 }]}><Text style={[styles.healthText, { color: accent }]}>{importing ? '取り込み中…' : '♥ ヘルスケアから取り込む'}</Text></Pressable> : null}</View> : status ? (
         <>
           <View style={styles.top}><View style={[styles.statusCircle, { backgroundColor: `${status.bmiStage.color}66` }]}><Text style={styles.statusEmoji}>{status.bmiStage.emoji}</Text></View><View style={styles.summary}><Text style={[styles.weight, { color: palette.text }]}>現在 {latest.weight_kg.toFixed(1)} kg</Text>{latest.body_fat_pct != null ? <Text style={[styles.fat, { color: palette.muted }]}>体脂肪 {latest.body_fat_pct.toFixed(1)}%</Text> : null}<View style={styles.chips}><Text style={[styles.chip, { backgroundColor: `${status.bmiStage.color}66`, color: palette.text }]}>BMI {status.bmi.toFixed(1)} · {status.bmiStage.label}</Text>{status.fatStage ? <Text style={[styles.chip, { backgroundColor: `${status.fatStage.color}66`, color: palette.text }]}>体脂肪 {status.fatStage.label}</Text> : null}</View></View></View>
