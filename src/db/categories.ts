@@ -3,7 +3,13 @@ import { localDate, localTimestamp } from './time';
 import { Category } from './types';
 
 export function listCategories(db: Db): Category[] {
-  return db.getAllSync<Category>('SELECT * FROM categories ORDER BY id');
+  return db.getAllSync<Category>('SELECT * FROM categories ORDER BY sort_order, id');
+}
+
+export function reorderCategories(db: Db, orderedIds: number[]): void {
+  db.withTransactionSync(() => {
+    orderedIds.forEach((id, index) => db.runSync('UPDATE categories SET sort_order = ? WHERE id = ?', index, id));
+  });
 }
 
 export function getCategory(db: Db, id: number): Category | null {
@@ -12,7 +18,7 @@ export function getCategory(db: Db, id: number): Category | null {
 
 export function createCategory(db: Db, name: string, color: string): number {
   return db.runSync(
-    'INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)',
+    'INSERT INTO categories (name, color, created_at, sort_order) VALUES (?, ?, ?, (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM categories))',
     name.trim(),
     color,
     localTimestamp(),

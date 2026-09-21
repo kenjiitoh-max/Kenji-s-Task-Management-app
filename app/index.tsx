@@ -1,14 +1,15 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryCard } from '../src/components/CategoryCard';
+import { DraggableList } from '../src/components/DraggableList';
 import { KobeJerseys } from '../src/components/KobeJerseys';
 import { CategoryFormModal } from '../src/components/CategoryFormModal';
 import { Fab } from '../src/components/Fab';
 import { DealVaultCard } from '../src/components/DealVaultCard';
 import { QuoteCard } from '../src/components/QuoteCard';
-import { createCategory, deleteCategory, getCategoryProgress, listCategories } from '../src/db/categories';
+import { createCategory, deleteCategory, getCategoryProgress, listCategories, reorderCategories } from '../src/db/categories';
 import { categoryStreak, countCompletions, ensureDailyReset, listActionStreaks } from '../src/db/dailyActions';
 import { getLatestBodyRecord, getBodyProfile } from '../src/db/bodyRecords';
 import { getDb } from '../src/db/database';
@@ -61,14 +62,28 @@ export default function HomeScreen() {
       return [item.id, {}];
     })));
   }, []);
-  const confirmDelete = (category: Category) => category.kind ? Alert.alert('削除できません', `「${category.name}」は基本カテゴリのため削除できません。`) : Alert.alert('カテゴリを削除', `「${category.name}」と中のタスク・ゴール・記録をすべて削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteCategory(getDb(), category.id); refresh(); } }]);
+  const confirmDelete = (category: Category) => category.kind ? undefined : Alert.alert('カテゴリを削除', `「${category.name}」と中のタスク・ゴール・記録をすべて削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteCategory(getDb(), category.id); refresh(); } }]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
   useEffect(() => subscribe(refresh), [refresh]);
   const date = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
       <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View><KobeJerseys /></View>
-      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>} renderItem={({ item }) => { const sub = subtitles[item.id]; const character = sub?.bodyStage ? <BodyAvatar seed={item.id} size={92} stageKey={sub.bodyStage} /> : sub?.lineage ? <LineageAvatar lineage={sub.lineage} seed={item.id} size={92} stageIndex={sub.stageIndex ?? 0} /> : undefined; return <CategoryCard category={item} character={character} dark={dark} emoji={subtitles[item.id]?.emoji} onLongPress={() => confirmDelete(item)} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} categoryStreak={categoryStreaks[item.id] ?? 0} subtitle={subtitles[item.id]?.subtitle} />; }} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
+      <DraggableList
+        contentContainerStyle={styles.list}
+        data={categories}
+        keyExtractor={(item) => String(item.id)}
+        ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>}
+        ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>}
+        onLongPress={confirmDelete}
+        onPress={(item) => router.push(`/category/${item.id}`)}
+        onReorder={(next) => { setCategories(next); reorderCategories(getDb(), next.map((item) => item.id)); }}
+        renderItem={(item) => {
+          const sub = subtitles[item.id];
+          const character = sub?.bodyStage ? <BodyAvatar seed={item.id} size={92} stageKey={sub.bodyStage} /> : sub?.lineage ? <LineageAvatar lineage={sub.lineage} seed={item.id} size={92} stageIndex={sub.stageIndex ?? 0} /> : undefined;
+          return <CategoryCard category={item} categoryStreak={categoryStreaks[item.id] ?? 0} character={character} dark={dark} emoji={sub?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={sub?.subtitle} />;
+        }}
+      />
       <Fab color={palette.primary} onPress={() => setModalVisible(true)} />
       <CategoryFormModal dark={dark} onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
     </SafeAreaView>
