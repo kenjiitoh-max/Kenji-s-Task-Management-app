@@ -114,7 +114,7 @@ function addColumnIfMissing(db: Db, table: string, column: string, type: string)
   }
 }
 
-const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer', 読書: 'reader', 筋トレ: 'athlete' };
+const defaultKinds: Record<string, CategoryKind> = { 体重管理: 'weight', 英語: 'bird', Devin: 'engineer', 読書: 'reader', 筋トレ: 'athlete', 営業: 'sales' };
 const legacySeedColors: [string, string, string][] = [
   ['体重管理', '#F97362', '#F8B7A8'],
   ['英語', '#3B82F6', '#A9C9F5'],
@@ -130,6 +130,7 @@ const extraSeedCategories: [string, string, CategoryKind][] = [
   ['読書', '#9F7AEA', 'reader'],
   ['筋トレ', '#E2C069', 'athlete'],
 ];
+const salesSeedCategories: [string, string, CategoryKind][] = [['営業', '#D4A537', 'sales']];
 
 function addMissingCategories(db: Db, key: string, seeds: [string, string, CategoryKind][]): void {
   const done = db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
@@ -170,6 +171,7 @@ function migrateCategoryKind(db: Db): void {
   migrateSeedColors(db, 'seed_colors_migrated', legacySeedColors);
   migrateSeedColors(db, 'seed_colors_migrated_v2', pastelSeedColors);
   addMissingCategories(db, 'seed_categories_v2', extraSeedCategories);
+  addMissingCategories(db, 'seed_categories_v3', salesSeedCategories);
 }
 
 export function seedCategories(db: Db): void {
@@ -181,6 +183,7 @@ export function seedCategories(db: Db): void {
     ['英語', '#8B5FC7', 'bird'],
     ['Devin', '#B08BE0', 'engineer'],
     ...extraSeedCategories,
+    ...salesSeedCategories,
   ];
   for (const [name, color, kind] of seeds) {
     db.runSync('INSERT INTO categories (name, color, kind, created_at) VALUES (?, ?, ?, ?)', name, color, kind, now);

@@ -8,11 +8,11 @@ describe('growth levels', () => {
   });
 
   it('maps lineage stages', () => {
-    expect(stageForLevel('bird', 3).name).toBe('ひよこ');
+    expect(stageForLevel('bird', 3).name).toBe('トラの子');
     expect(getLevelState('engineer', 0).stage.name).toBe('たまご');
     expect(getLevelState('engineer', 0).nextStage?.minLevel).toBe(3);
     expect(stageForLevel('reader', 6).name).toBe('フクロウ');
-    expect(stageForLevel('athlete', 20).name).toBe('マンバ');
+    expect(stageForLevel('athlete', 20).name).toBe('シルバーバック');
   });
 
   it('treats every non-weight kind as a lineage', () => {

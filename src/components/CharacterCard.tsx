@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Defs, Ellipse, Path, RadialGradient, Stop } from 'react-native-svg';
 import { getLevelState, Lineage, lineages } from '../growth/levels';
+import { LineageAvatar } from './LineageAvatar';
 import { radius, shadow } from '../theme';
 
 const HERO = 300;
@@ -99,11 +100,11 @@ export function CharacterCard({ dark, lineage, completions, pulseKey }: {
           </Svg>
         </Animated.View>
         <Animated.View style={[styles.character, charStyle]}>
-          <Text style={styles.emoji}>{state.stage.emoji}</Text>
+          <LineageAvatar animated lineage={lineage} size={HERO * 0.62} stageIndex={stageIndex} />
         </Animated.View>
         {state.nextStage ? (
           <View style={styles.nextBox}>
-            <Text style={[styles.nextEmoji, { opacity: 0.25 + closeness * 0.35 }]}>{state.nextStage.emoji}</Text>
+            <View style={{ opacity: 0.25 + closeness * 0.35 }}><LineageAvatar animated={false} lineage={lineage} seed={1} size={44} stageIndex={stageIndex + 1} /></View>
             <View style={styles.nextMask}><Text style={styles.nextMark}>?</Text></View>
             <Text style={styles.nextLabel}>次の姿</Text>
           </View>
@@ -125,8 +126,7 @@ export function CharacterCard({ dark, lineage, completions, pulseKey }: {
 
 const styles = StyleSheet.create({
   card: { borderRadius: radius.card, marginBottom: 26, overflow: 'hidden' },
-  character: { alignItems: 'center', justifyContent: 'center', left: 0, position: 'absolute', right: 0, top: HERO * 0.22 },
-  emoji: { fontSize: 128, lineHeight: 150, textAlign: 'center' },
+  character: { alignItems: 'center', justifyContent: 'center', left: 0, position: 'absolute', right: 0, top: HERO * 0.14 },
   fill: { borderRadius: 4, height: 8 },
   flavor: { color: '#D9CFEA', fontSize: 14, lineHeight: 21, marginBottom: 14, marginTop: 4 },
   groundShadow: { height: 28, left: '50%', marginLeft: -70, position: 'absolute', top: HERO * 0.72, width: 140 },
@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
   levelText: { color: '#1F1233', fontSize: 15, fontWeight: '900' },
   next: { color: '#D9CFEA', flex: 1, fontSize: 12, textAlign: 'right' },
   nextBox: { alignItems: 'center', position: 'absolute', right: 14, top: 14 },
-  nextEmoji: { fontSize: 34 },
   nextLabel: { color: '#D9CFEA', fontSize: 10, marginTop: 2 },
   nextMark: { color: '#fff', fontSize: 22, fontWeight: '900' },
   nextMask: { alignItems: 'center', backgroundColor: '#0B0620AA', borderRadius: 22, height: 44, justifyContent: 'center', position: 'absolute', top: 0, width: 44 },

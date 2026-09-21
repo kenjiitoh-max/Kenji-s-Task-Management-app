@@ -12,7 +12,7 @@ const tierColors: Record<StampTier, { light: string; mid: string; dark: string; 
   diamond: { light: '#F0FDFF', mid: '#7DD3FC', dark: '#1E40AF', rim: '#38BDF8' },
 };
 
-const kindEmoji: Record<CategoryKind, string> = { athlete: '🏋️', reader: '📖', bird: '🐦', engineer: '💻', weight: '⚖️' };
+const kindEmoji: Record<CategoryKind, string> = { athlete: '🏋️', reader: '📖', bird: '🐦', engineer: '💻', weight: '⚖️', sales: '🦁' };
 
 export function stampEmoji(kind: CategoryKind | null): string {
   return kind ? kindEmoji[kind] : '⭐';
