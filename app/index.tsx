@@ -58,7 +58,7 @@ export default function HomeScreen() {
       return [item.id, {}];
     })));
   }, []);
-  const confirmDelete = (category: Category) => Alert.alert('カテゴリを削除', `「${category.name}」と中のタスク・ゴール・記録をすべて削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteCategory(getDb(), category.id); refresh(); } }]);
+  const confirmDelete = (category: Category) => category.kind ? Alert.alert('削除できません', `「${category.name}」は基本カテゴリのため削除できません。`) : Alert.alert('カテゴリを削除', `「${category.name}」と中のタスク・ゴール・記録をすべて削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteCategory(getDb(), category.id); refresh(); } }]);
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
   useEffect(() => subscribe(refresh), [refresh]);
   const date = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
