@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart } from '../../src/components/charts/BarChart';
 import { LineChart } from '../../src/components/charts/LineChart';
@@ -33,7 +33,7 @@ export default function HistoryScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const categoryId = Number(id);
-  const dark = useColorScheme() === 'dark';
+  const dark = true;
   const palette = getPalette(dark ? 'dark' : 'light');
   const [category, setCategory] = useState<Category | null>(null);
   const [records, setRecords] = useState<BodyRecord[]>([]);

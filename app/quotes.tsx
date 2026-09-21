@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { listFavoriteIds, toggleFavorite } from '../src/db/quoteFavorites';
 import { getDb } from '../src/db/database';
@@ -24,7 +24,7 @@ const filters: { key: Filter; label: string }[] = [
 export default function QuotesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const dark = useColorScheme() === 'dark';
+  const dark = true;
   const palette = getPalette(dark ? 'dark' : 'light');
   const listRef = useRef<FlatList<Quote>>(null);
   const hasRetriedScrollRef = useRef(false);

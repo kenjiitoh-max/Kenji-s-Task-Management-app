@@ -4,17 +4,6 @@ import { textOn } from './contrast';
 export { textOn };
 
 export const palettes = {
-  light: {
-    background: '#F7F3FC',
-    card: '#FFFFFF',
-    text: '#2B1B45',
-    muted: '#6F5F88',
-    border: '#E8DFF4',
-    primary: '#7B4FB8',
-    gold: '#D4A537',
-    input: '#F2ECF9',
-    accentSoft: '#FBF1D6',
-  },
   dark: {
     background: '#0F0819',
     card: '#1B1030',
@@ -39,8 +28,9 @@ export const shadow = Platform.select({
 
 export const radius = { card: 22, control: 14 };
 
-export function getPalette(scheme: ColorSchemeName) {
-  return scheme === 'dark' ? palettes.dark : palettes.light;
+// The app is dark-only: the OS appearance setting never switches it to a light palette.
+export function getPalette(_scheme?: ColorSchemeName): Palette {
+  return palettes.dark;
 }
 
 export function cardSurface(palette: Palette) {
