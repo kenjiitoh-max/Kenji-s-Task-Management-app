@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from '../src/components/charts/LineChart';
 import { DealLogModal } from '../src/components/DealLogModal';
