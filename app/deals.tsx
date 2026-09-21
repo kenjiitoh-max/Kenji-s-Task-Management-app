@@ -47,6 +47,7 @@ export default function DealsScreen() {
     setCelebration((value) => value + 1);
     setToast(`${lootFor(deal.amount_usd)} DEAL CLOSED! ${formatUsd(deal.amount_usd)} ／ コミッション +${formatJpy(commissionJpy({ kind: deal.kind, amount_usd: deal.amount_usd, fx_rate: deal.fx_rate }))}`);
     setTimeout(() => setToast(''), 3500);
+    setTimeout(() => setCelebration(0), 6000);
   };
   const remove = (deal: Deal) => Alert.alert('この戦利品を削除しますか？', `${dealKindLabels[deal.kind]} ${formatUsd(deal.amount_usd)} (${deal.closed_on})`, [{ style: 'cancel', text: 'キャンセル' }, { onPress: () => { deleteDeal(getDb(), deal.id); refresh(); }, style: 'destructive', text: '削除' }]);
 
