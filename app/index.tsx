@@ -17,6 +17,7 @@ import { getBodyStatus } from '../src/body/bodyMetrics';
 import { getLevelState, isLineage } from '../src/growth/levels';
 import { subscribe } from '../src/db/dailyResetEvents';
 import { Category, Deal } from '../src/db/types';
+import { BodyAvatar } from '../src/components/BodyAvatar';
 import { getPalette } from '../src/theme';
 import { quoteForDate } from '../src/quotes/dailyQuote';
 import { localDate } from '../src/db/time';
@@ -27,7 +28,7 @@ export default function HomeScreen() {
   const palette = getPalette(dark ? 'dark' : 'light');
   const [categories, setCategories] = useState<Category[]>([]);
   const [progress, setProgress] = useState<Record<number, { total: number; completed: number }>>({});
-  const [subtitles, setSubtitles] = useState<Record<number, { subtitle?: string; emoji?: string }>>({});
+  const [subtitles, setSubtitles] = useState<Record<number, { subtitle?: string; emoji?: string; bodyStage?: string }>>({});
   const [streaks, setStreaks] = useState<Record<number, { id: number; title: string; streak: number }[]>>({});
   const [favoriteQuote, setFavoriteQuote] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -47,7 +48,7 @@ export default function HomeScreen() {
       if (item.kind === 'weight') {
         if (!latest) return [item.id, { subtitle: profile.height_cm ? '今日の体重を記録しよう' : '身長を設定して始めよう', emoji: '⚖️' }];
         const status = profile.height_cm ? getBodyStatus(latest.weight_kg, latest.body_fat_pct, profile.height_cm, profile.sex) : null;
-        return [item.id, { subtitle: `${latest.weight_kg.toFixed(1)} kg${status ? ` · ${status.bmiStage.label}` : ''}`, emoji: status?.bmiStage.emoji || '⚖️' }];
+        return [item.id, { subtitle: `${latest.weight_kg.toFixed(1)} kg${status ? ` · ${status.bmiStage.label}` : ''}`, emoji: status?.bmiStage.emoji || '⚖️', bodyStage: status?.bmiStage.key }];
       }
       if (isLineage(item.kind)) {
         const state = getLevelState(item.kind, countCompletions(db, item.id));
@@ -62,7 +63,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
       <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View></View>
-      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>} renderItem={({ item }) => <CategoryCard category={item} dark={dark} emoji={subtitles[item.id]?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={subtitles[item.id]?.subtitle} />} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
+      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>} renderItem={({ item }) => { const bodyStage = subtitles[item.id]?.bodyStage; return <CategoryCard category={item} character={bodyStage ? <BodyAvatar seed={item.id} size={56} stageKey={bodyStage} /> : undefined} dark={dark} emoji={subtitles[item.id]?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={subtitles[item.id]?.subtitle} />; }} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
       <Fab color={palette.primary} onPress={() => setModalVisible(true)} />
       <CategoryFormModal dark={dark} onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
     </SafeAreaView>
