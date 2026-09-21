@@ -5,16 +5,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryCard } from '../src/components/CategoryCard';
 import { CategoryFormModal } from '../src/components/CategoryFormModal';
 import { Fab } from '../src/components/Fab';
+import { DealVaultCard } from '../src/components/DealVaultCard';
 import { QuoteCard } from '../src/components/QuoteCard';
 import { createCategory, getCategoryProgress, listCategories } from '../src/db/categories';
 import { countCompletions, ensureDailyReset, listActionStreaks } from '../src/db/dailyActions';
 import { getLatestBodyRecord, getBodyProfile } from '../src/db/bodyRecords';
 import { getDb } from '../src/db/database';
+import { listDeals } from '../src/db/deals';
 import { listFavoriteIds, toggleFavorite } from '../src/db/quoteFavorites';
 import { getBodyStatus } from '../src/body/bodyMetrics';
 import { getLevelState, isLineage } from '../src/growth/levels';
 import { subscribe } from '../src/db/dailyResetEvents';
-import { Category } from '../src/db/types';
+import { Category, Deal } from '../src/db/types';
 import { getPalette } from '../src/theme';
 import { quoteForDate } from '../src/quotes/dailyQuote';
 import { localDate } from '../src/db/time';
@@ -28,6 +30,7 @@ export default function HomeScreen() {
   const [subtitles, setSubtitles] = useState<Record<number, { subtitle?: string; emoji?: string }>>({});
   const [streaks, setStreaks] = useState<Record<number, { id: number; title: string; streak: number }[]>>({});
   const [favoriteQuote, setFavoriteQuote] = useState(false);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const refresh = useCallback(() => {
     const db = getDb();
@@ -39,6 +42,7 @@ export default function HomeScreen() {
     const profile = getBodyProfile(db);
     const latest = getLatestBodyRecord(db);
     setFavoriteQuote(listFavoriteIds(db).includes(quoteForDate(localDate()).id));
+    setDeals(listDeals(db));
     setSubtitles(Object.fromEntries(items.map((item) => {
       if (item.kind === 'weight') {
         if (!latest) return [item.id, { subtitle: profile.height_cm ? '今日の体重を記録しよう' : '身長を設定して始めよう', emoji: '⚖️' }];
@@ -58,7 +62,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
       <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View></View>
-      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} />} renderItem={({ item }) => <CategoryCard category={item} dark={dark} emoji={subtitles[item.id]?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={subtitles[item.id]?.subtitle} />} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
+      <FlatList contentContainerStyle={styles.list} data={categories} keyExtractor={(item) => String(item.id)} ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>} renderItem={({ item }) => <CategoryCard category={item} dark={dark} emoji={subtitles[item.id]?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={subtitles[item.id]?.subtitle} />} ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>} />
       <Fab color={palette.primary} onPress={() => setModalVisible(true)} />
       <CategoryFormModal dark={dark} onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
     </SafeAreaView>

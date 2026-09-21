@@ -91,6 +91,16 @@ export function initDatabase(db: Db): void {
       date TEXT NOT NULL,
       performed_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS deals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kind TEXT NOT NULL CHECK(kind IN ('new', 'renewal')),
+      amount_usd REAL NOT NULL,
+      closed_on TEXT NOT NULL,
+      fx_rate REAL NOT NULL,
+      fx_date TEXT NOT NULL,
+      memo TEXT,
+      created_at TEXT NOT NULL
+    );
   `);
   migrateCategoryKind(db);
   addColumnIfMissing(db, 'completion_log', 'book_id', 'INTEGER');

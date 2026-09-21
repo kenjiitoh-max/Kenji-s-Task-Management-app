@@ -68,6 +68,19 @@ export interface ActionTemplate {
   created_at: string;
 }
 
+export type DealKind = 'new' | 'renewal';
+
+export interface Deal {
+  id: number;
+  kind: DealKind;
+  amount_usd: number;
+  closed_on: string;
+  fx_rate: number;
+  fx_date: string;
+  memo: string | null;
+  created_at: string;
+}
+
 export interface DailyAction {
   id: number;
   category_id: number;
