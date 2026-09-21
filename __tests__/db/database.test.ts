@@ -8,10 +8,10 @@ describe('database and categories', () => {
     initDatabase(db);
     seedCategories(db);
     seedCategories(db);
-    expect(listCategories(db)).toHaveLength(5);
-    expect(listCategories(db).map((category) => category.name)).toEqual(['体重管理', '英語', 'Devin', '読書', '筋トレ']);
-    expect(listCategories(db).map((category) => category.color)).toEqual(['#D4A537', '#8B5FC7', '#B08BE0', '#9F7AEA', '#E2C069']);
-    expect(listCategories(db).map((category) => category.kind)).toEqual(['weight', 'bird', 'engineer', 'reader', 'athlete']);
+    expect(listCategories(db)).toHaveLength(6);
+    expect(listCategories(db).map((category) => category.name)).toEqual(['体重管理', '英語', 'Devin', '読書', '筋トレ', '営業']);
+    expect(listCategories(db).map((category) => category.color)).toEqual(['#D4A537', '#8B5FC7', '#B08BE0', '#9F7AEA', '#E2C069', '#D4A537']);
+    expect(listCategories(db).map((category) => category.kind)).toEqual(['weight', 'bird', 'engineer', 'reader', 'athlete', 'sales']);
   });
 
   it('recolors legacy seed colors during initialization', () => {
@@ -24,17 +24,17 @@ describe('database and categories', () => {
     expect(listCategories(db).find((category) => category.name === 'Other')?.color).toBe('#F97362');
   });
 
-  it('adds 読書 and 筋トレ to an existing database once', () => {
+  it('adds 読書, 筋トレ and 営業 to an existing database once', () => {
     const db = createTestDb();
     db.execSync('CREATE TABLE categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, color TEXT NOT NULL, created_at TEXT NOT NULL)');
     db.runSync('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)', '読書', '#123456', '2026-01-01T00:00:00');
     initDatabase(db);
-    expect(listCategories(db).map((category) => category.name)).toEqual(['読書', '筋トレ']);
+    expect(listCategories(db).map((category) => category.name)).toEqual(['読書', '筋トレ', '営業']);
     expect(listCategories(db).find((category) => category.name === '読書')?.color).toBe('#123456');
-    expect(listCategories(db).map((category) => category.kind)).toEqual(['reader', 'athlete']);
+    expect(listCategories(db).map((category) => category.kind)).toEqual(['reader', 'athlete', 'sales']);
     deleteCategory(db, listCategories(db).find((category) => category.name === '筋トレ')!.id);
     initDatabase(db);
-    expect(listCategories(db).map((category) => category.name)).toEqual(['読書']);
+    expect(listCategories(db).map((category) => category.name)).toEqual(['読書', '営業']);
   });
 
   it('creates, lists, and deletes categories', () => {
