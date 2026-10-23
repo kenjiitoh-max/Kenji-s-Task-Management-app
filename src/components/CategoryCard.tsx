@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Category } from '../db/types';
-import { getPalette, radius, shadow } from '../theme';
+import { getPalette, Palette, radius, readableOn, shadow } from '../theme';
 
 function LivingEmoji({ emoji, color, seed }: { emoji: string; color: string; seed: number }) {
   const bob = useSharedValue(0);
@@ -23,7 +23,7 @@ function LivingEmoji({ emoji, color, seed }: { emoji: string; color: string; see
   );
 }
 
-function StreakFlame({ days, accent }: { days: number; accent: string }) {
+function StreakFlame({ days, accent, dark, palette }: { days: number; accent: string; dark: boolean; palette: Palette }) {
   const scale = useSharedValue(1);
   const glow = useSharedValue(0.4);
   useEffect(() => {
@@ -37,10 +37,10 @@ function StreakFlame({ days, accent }: { days: number; accent: string }) {
   return (
     <View style={styles.flameWrap}>
       <Animated.View style={[styles.flameHalo, { backgroundColor: color }, halo]} />
-      <Animated.View style={[styles.flameBadge, { borderColor: color }, flame]}>
+      <Animated.View style={[styles.flameBadge, { backgroundColor: palette.background, borderColor: color }, flame]}>
         <Text style={styles.flameEmoji}>🔥</Text>
-        <Text style={[styles.flameDays, { color: hot ? '#FDBA74' : '#F5E6B8' }]}>{days}</Text>
-        <Text style={[styles.flameUnit, { color }]}>日連続</Text>
+        <Text style={[styles.flameDays, { color: dark ? (hot ? '#FDBA74' : '#F5E6B8') : readableOn(color, palette.background) }]}>{days}</Text>
+        <Text style={[styles.flameUnit, { color: readableOn(color, palette.background) }]}>日連続</Text>
       </Animated.View>
     </View>
   );
@@ -82,7 +82,7 @@ export function CategoryCard({
             <Text style={[styles.name, { color: palette.text }]}>{category.name}</Text>
             {subtitle ? <Text style={[styles.subtitle, { color: palette.muted }]}>{subtitle}</Text> : null}
           </View>
-          {categoryStreak > 0 ? <StreakFlame accent={accent} days={categoryStreak} /> : <Ionicons name="chevron-forward" size={20} color={accent} />}
+          {categoryStreak > 0 ? <StreakFlame accent={accent} dark={dark} days={categoryStreak} palette={palette} /> : <Ionicons name="chevron-forward" size={20} color={accent} />}
         </View>
         {(() => {
           const active = (streaks ?? []).filter((entry) => entry.streak > 0);
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 22 },
   emojiCircle: { alignItems: 'center', borderRadius: 22, height: 44, justifyContent: 'center', marginRight: 9, width: 44 },
   fill: { borderRadius: 3, height: 6 },
-  flameBadge: { alignItems: 'center', backgroundColor: '#0F0819', borderRadius: 16, borderWidth: 1.5, minWidth: 66, paddingHorizontal: 10, paddingVertical: 6 },
+  flameBadge: { alignItems: 'center', borderRadius: 16, borderWidth: 1.5, minWidth: 66, paddingHorizontal: 10, paddingVertical: 6 },
   flameDays: { fontSize: 24, fontWeight: '900', lineHeight: 26 },
   flameEmoji: { fontSize: 18, lineHeight: 20 },
   flameHalo: { borderRadius: 44, height: 88, opacity: 0.4, position: 'absolute', width: 88 },

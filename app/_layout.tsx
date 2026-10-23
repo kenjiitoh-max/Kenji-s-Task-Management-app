@@ -1,13 +1,16 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, AppState, View } from 'react-native';
+import { ActivityIndicator, AppState, useColorScheme, View } from 'react-native';
 import { getDb, initDatabase, seedCategories } from '../src/db/database';
 import { ensureDailyReset } from '../src/db/dailyActions';
 import { emit } from '../src/db/dailyResetEvents';
 import { localDate } from '../src/db/time';
+import { getPalette } from '../src/theme';
 
 export default function RootLayout() {
+  const scheme = useColorScheme();
+  const palette = getPalette(scheme);
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const db = getDb();
@@ -33,6 +36,6 @@ export default function RootLayout() {
       clearTimeout(midnightTimer);
     };
   }, []);
-  if (!ready) return <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}><ActivityIndicator /></View>;
-  return <><StatusBar style="light" /><Stack screenOptions={{ headerShown: false }} /></>;
+  if (!ready) return <View style={{ alignItems: 'center', backgroundColor: palette.background, flex: 1, justifyContent: 'center' }}><ActivityIndicator color={palette.primary} /></View>;
+  return <><StatusBar style={scheme === 'light' ? 'dark' : 'light'} /><Stack screenOptions={{ contentStyle: { backgroundColor: palette.background }, headerShown: false }} /></>;
 }

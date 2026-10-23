@@ -24,16 +24,16 @@ export function GoalFormModal({ visible, dark, term, goal, onClose, onSave, onDe
     <ModalShell dark={dark} onClose={onClose} title={`${term === 'short' ? '短期' : term === 'medium' ? '中期' : '長期'}ゴール`} visible={visible}>
       <TextInput multiline onChangeText={setDescription} placeholder="ゴールを入力" placeholderTextColor={palette.muted} style={[styles.textarea, { backgroundColor: palette.input, color: palette.text }]} value={description} />
       <TextInput autoCapitalize="none" onChangeText={(value) => { setDate(value); setDateError(''); }} placeholder="目標日 (YYYY-MM-DD)" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={date} />
-      {dateError ? <Text style={[styles.error, { color: '#EF4444' }]}>{dateError}</Text> : null}
+      {dateError ? <Text style={[styles.error, { color: palette.danger }]}>{dateError}</Text> : null}
       <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>保存する</Text></Pressable>
-      {goal ? <Pressable onPress={() => Alert.alert('ゴールを削除', 'このゴールを削除しますか？', [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { onDelete(); onClose(); } }])} style={styles.delete}><Text style={styles.deleteText}>ゴールを削除</Text></Pressable> : null}
+      {goal ? <Pressable onPress={() => Alert.alert('ゴールを削除', 'このゴールを削除しますか？', [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { onDelete(); onClose(); } }])} style={styles.delete}><Text style={[styles.deleteText, { color: palette.danger }]}>ゴールを削除</Text></Pressable> : null}
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
   delete: { alignItems: 'center', padding: 14 },
-  deleteText: { color: '#EF4444', fontWeight: '600' },
+  deleteText: { fontWeight: '600' },
   error: { fontSize: 13, marginBottom: 16, marginTop: -8 },
   input: { borderRadius: 12, fontSize: 15, marginBottom: 16, padding: 14 },
   save: { alignItems: 'center', borderRadius: 12, padding: 15 },

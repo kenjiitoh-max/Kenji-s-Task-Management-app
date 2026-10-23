@@ -44,14 +44,14 @@ export function BodyRecordModal({ visible, dark, record, onClose, onSave }: {
       <TextInput keyboardType="decimal-pad" onChangeText={(value) => { setFat(value); setError(''); }} placeholder="例：21.5" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={fat} />
       <Text style={[styles.label, { color: palette.muted }]}>日付</Text>
       <TextInput autoCapitalize="none" onChangeText={(value) => { setDate(value); setError(''); }} placeholder="YYYY-MM-DD" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={date} />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: palette.danger }]}>{error}</Text> : null}
       <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>保存する</Text></Pressable>
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  error: { color: '#D95F59', fontSize: 13, marginBottom: 14 },
+  error: { fontSize: 13, marginBottom: 14 },
   input: { borderRadius: 14, fontSize: 16, marginBottom: 14, padding: 14 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 7 },
   save: { alignItems: 'center', borderRadius: 14, padding: 15 },

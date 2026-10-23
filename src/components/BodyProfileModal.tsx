@@ -36,14 +36,14 @@ export function BodyProfileModal({ visible, dark, profile, onClose, onSave }: {
       <View style={[styles.segment, { backgroundColor: palette.input }]}>
         {([['male', '男性'], ['female', '女性']] as const).map(([value, label]) => <Pressable key={value} onPress={() => setSex(value)} style={[styles.segmentButton, sex === value && { backgroundColor: palette.card }]}><Text style={{ color: sex === value ? palette.text : palette.muted, fontWeight: '700' }}>{label}</Text></Pressable>)}
       </View>
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: palette.danger }]}>{error}</Text> : null}
       <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>保存する</Text></Pressable>
     </ModalShell>
   );
 }
 
 const styles = StyleSheet.create({
-  error: { color: '#D95F59', fontSize: 13, marginBottom: 14 },
+  error: { fontSize: 13, marginBottom: 14 },
   input: { borderRadius: 14, fontSize: 16, marginBottom: 18, padding: 14 },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 7 },
   save: { alignItems: 'center', borderRadius: 14, padding: 15 },
