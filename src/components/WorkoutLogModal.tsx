@@ -68,7 +68,7 @@ export function WorkoutLogModal({ visible, dark, recent, lastSet, bestFor, onClo
             <Stepper dark={dark} label="回数" min={1} onChange={(value) => { setReps(value); setError(''); }} step={1} unit="回" value={reps} />
             <Stepper dark={dark} label="セット" min={1} onChange={(value) => { setSets(value); setError(''); }} step={1} unit="set" value={sets} />
           </View>
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? <Text style={[styles.error, { color: palette.danger }]}>{error}</Text> : null}
           <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>記録する</Text></Pressable>
         </View>
       ) : (
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   change: { fontSize: 14, fontWeight: '600', marginBottom: 10 },
   chip: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
   chipText: { fontSize: 13, fontWeight: '700' },
-  error: { color: '#D95F59', fontSize: 13, marginBottom: 14 },
+  error: { fontSize: 13, marginBottom: 14 },
   exercise: { borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
   exerciseText: { fontSize: 15, fontWeight: '600' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from '../src/components/charts/LineChart';
@@ -22,7 +22,8 @@ const shortDate = (date: string) => `${Number(date.slice(5, 7))}/${Number(date.s
 
 export default function DealsScreen() {
   const router = useRouter();
-  const dark = true;
+  const scheme = useColorScheme();
+  const dark = scheme !== 'light';
   const palette = getPalette(dark ? 'dark' : 'light');
   const [deals, setDeals] = useState<Deal[]>([]);
   const [logOpen, setLogOpen] = useState(false);
