@@ -47,7 +47,7 @@ export function BookSearchModal({ visible, dark, onClose, onAdd }: { visible: bo
         data={results}
         keyboardShouldPersistTaps="handled"
         keyExtractor={(item, index) => item.external_id ?? `${item.title}-${index}`}
-        ListEmptyComponent={!loading && query.trim() ? <Pressable onPress={addManually} style={[styles.manual, { borderColor: palette.border }]}><Text style={[styles.manualText, { color: palette.primary }]}>「{query.trim()}」を表紙なしで追加</Text></Pressable> : null}
+        ListEmptyComponent={!loading && query.trim() ? <Pressable onPress={addManually} style={[styles.manual, { borderColor: palette.border }]}><Text style={[styles.manualText, { color: palette.primary }]}>「{query.trim()}」を表紙なしで追加</Text></Pressable> : undefined}
         renderItem={({ item }) => (
           <Pressable onPress={() => { onAdd(item, status); close(); }} style={[styles.row, { borderBottomColor: palette.border }]}>
             <BookCover dark={dark} title={item.title} url={item.cover_url} width={44} />
