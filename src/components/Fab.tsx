@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
+import { textOn } from '../theme';
 
 export function Fab({ onPress, color }: { onPress: () => void; color: string }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel="追加" onPress={onPress} style={[styles.fab, { backgroundColor: color }]}>
-      <Ionicons name="add" size={30} color="#fff" />
+      <Ionicons name="add" size={30} color={textOn(color)} />
     </Pressable>
   );
 }

@@ -79,7 +79,7 @@ export function DealLogModal({ visible, dark, onClose, onSave }: { visible: bool
       </View>
       {rateError ? <Text style={[styles.hint, { color: palette.muted }]}>{rateError}</Text> : null}
       {preview !== null ? <Text style={[styles.preview, { color: palette.gold }]}>コミッション見込み {formatJpy(preview)}</Text> : null}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: palette.danger }]}>{error}</Text> : null}
       <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.gold }]}><Text style={[styles.saveText, { color: textOn(palette.gold) }]}>🏆 獲得を記録</Text></Pressable>
     </ModalShell>
   );
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   dateInput: { borderRadius: 12, flex: 1, fontSize: 16, fontWeight: '600', padding: 12, textAlign: 'center' },
   dateRow: { alignItems: 'center', flexDirection: 'row', gap: 8 },
   dollar: { fontSize: 26, fontWeight: '800' },
-  error: { color: '#D9534F', fontSize: 13, marginTop: 10 },
+  error: { fontSize: 13, marginTop: 10 },
   hint: { fontSize: 12, marginTop: 6 },
   label: { fontSize: 12, fontWeight: '700', marginBottom: 6, marginTop: 14 },
   preview: { fontSize: 16, fontWeight: '800', marginTop: 14, textAlign: 'center' },

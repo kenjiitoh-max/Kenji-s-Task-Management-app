@@ -1,7 +1,7 @@
 import { ColorSchemeName, Platform } from 'react-native';
-import { textOn } from './contrast';
+import { contrastRatio, readableOn, textOn } from './contrast';
 
-export { textOn };
+export { contrastRatio, readableOn, textOn };
 
 export const palettes = {
   dark: {
@@ -14,6 +14,19 @@ export const palettes = {
     gold: '#E2C069',
     input: '#2B1B45',
     accentSoft: '#2B1B45',
+    danger: '#D95F59',
+  },
+  light: {
+    background: '#F7F3FC',
+    card: '#FFFFFF',
+    text: '#2B1B45',
+    muted: '#5E4E78',
+    border: '#D9C9A3',
+    primary: '#6A3FA3',
+    gold: '#8A6414',
+    input: '#F2ECF9',
+    accentSoft: '#FBF1D6',
+    danger: '#B91C1C',
   },
 };
 
@@ -28,9 +41,9 @@ export const shadow = Platform.select({
 
 export const radius = { card: 22, control: 14 };
 
-// The app is dark-only: the OS appearance setting never switches it to a light palette.
-export function getPalette(_scheme?: ColorSchemeName): Palette {
-  return palettes.dark;
+// Follows the iOS appearance setting. Dark stays the default when the scheme is unknown.
+export function getPalette(scheme?: ColorSchemeName): Palette {
+  return scheme === 'light' ? palettes.light : palettes.dark;
 }
 
 export function cardSurface(palette: Palette) {

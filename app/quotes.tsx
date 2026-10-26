@@ -1,12 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { listFavoriteIds, toggleFavorite } from '../src/db/quoteFavorites';
 import { getDb } from '../src/db/database';
 import { Quote, QuoteTag, quotes } from '../src/quotes/quotes';
-import { cardSurface, getPalette, radius, shadow } from '../src/theme';
+import { cardSurface, getPalette, radius, shadow, textOn } from '../src/theme';
 
 type Filter = 'all' | 'favorites' | QuoteTag;
 
@@ -24,7 +24,8 @@ const filters: { key: Filter; label: string }[] = [
 export default function QuotesScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id?: string }>();
-  const dark = true;
+  const scheme = useColorScheme();
+  const dark = scheme !== 'light';
   const palette = getPalette(dark ? 'dark' : 'light');
   const listRef = useRef<FlatList<Quote>>(null);
   const hasRetriedScrollRef = useRef(false);
@@ -62,14 +63,14 @@ export default function QuotesScreen() {
         contentContainerStyle={styles.content}
         data={filteredQuotes}
         keyExtractor={(quote) => quote.id}
-        ListHeaderComponent={<FlatList horizontal contentContainerStyle={styles.filterContent} data={filters} keyExtractor={(item) => item.key} renderItem={({ item }) => <Pressable onPress={() => setFilter(item.key)} style={[styles.filter, { backgroundColor: filter === item.key ? palette.primary : palette.card }]}><Text style={{ color: filter === item.key ? '#fff' : palette.muted, fontSize: 12, fontWeight: '700' }}>{item.label}</Text></Pressable>} showsHorizontalScrollIndicator={false} />}
+        ListHeaderComponent={<FlatList horizontal contentContainerStyle={styles.filterContent} data={filters} keyExtractor={(item) => item.key} renderItem={({ item }) => <Pressable onPress={() => setFilter(item.key)} style={[styles.filter, { backgroundColor: filter === item.key ? palette.primary : palette.card }]}><Text style={{ color: filter === item.key ? textOn(palette.primary) : palette.muted, fontSize: 12, fontWeight: '700' }}>{item.label}</Text></Pressable>} showsHorizontalScrollIndicator={false} />}
         ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>お気に入りの金言はまだありません。</Text>}
         onScrollToIndexFailed={({ index, averageItemLength }) => {
           if (hasRetriedScrollRef.current) return;
           hasRetriedScrollRef.current = true;
           setTimeout(() => listRef.current?.scrollToOffset({ offset: averageItemLength * index, animated: true }), 100);
         }}
-        renderItem={({ item }) => <Pressable onPress={() => setExpandedId(expandedId === item.id ? null : item.id)} style={[styles.quote, cardSurface(palette), shadow]}><View style={styles.quoteHeader}><Text style={[styles.author, { color: palette.text }]}>{item.authorJa}</Text><Pressable accessibilityLabel={favoriteIds.has(item.id) ? 'お気に入りから削除' : 'お気に入りに追加'} onPress={() => toggle(item.id)} style={styles.heart}><Ionicons name={favoriteIds.has(item.id) ? 'heart' : 'heart-outline'} size={21} color={favoriteIds.has(item.id) ? '#D97893' : palette.muted} /></Pressable></View><Text style={[styles.textJa, { color: palette.text }]}>「{item.textJa}」</Text><Text style={[styles.original, { color: palette.muted }]}>{item.text}</Text>{expandedId === item.id ? <Text style={[styles.story, { color: palette.muted }]}>{item.story}</Text> : null}</Pressable>}
+        renderItem={({ item }) => <Pressable onPress={() => setExpandedId(expandedId === item.id ? null : item.id)} style={[styles.quote, cardSurface(palette), shadow]}><View style={styles.quoteHeader}><Text style={[styles.author, { color: palette.text }]}>{item.authorJa}</Text><Pressable accessibilityLabel={favoriteIds.has(item.id) ? 'お気に入りから削除' : 'お気に入りに追加'} onPress={() => toggle(item.id)} style={styles.heart}><Ionicons name={favoriteIds.has(item.id) ? 'heart' : 'heart-outline'} size={21} color={favoriteIds.has(item.id) ? '#D97893' : palette.muted} /></Pressable></View><Text style={[styles.textJa, { color: palette.text }]}>「{item.textJa}」</Text><Text style={[styles.original, { color: palette.muted }]}>{item.text}</Text>{expandedId === item.id ? <Text style={[styles.story, { borderTopColor: palette.border, color: palette.muted }]}>{item.story}</Text> : null}</Pressable>}
       />
     </SafeAreaView>
   );
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   quote: { borderRadius: radius.card, marginBottom: 12, padding: 17 },
   quoteHeader: { alignItems: 'center', flexDirection: 'row' },
   safe: { flex: 1 },
-  story: { borderTopColor: '#00000012', borderTopWidth: 1, fontSize: 13, lineHeight: 21, marginTop: 15, paddingTop: 13 },
+  story: { borderTopWidth: 1, fontSize: 13, lineHeight: 21, marginTop: 15, paddingTop: 13 },
   textJa: { fontSize: 18, fontWeight: '600', lineHeight: 28, marginTop: 10 },
   title: { fontSize: 22, fontWeight: '800' },
 });

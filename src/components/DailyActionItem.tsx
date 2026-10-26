@@ -3,7 +3,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } 
 import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { DailyAction } from '../db/types';
-import { cardSurface, getPalette, radius, shadow } from '../theme';
+import { cardSurface, getPalette, radius, shadow, textOn } from '../theme';
 
 export function DailyActionItem({ action, dark, accent, streak, onToggle, onDelete }: { action: DailyAction; dark: boolean; accent: string; streak?: number; onToggle: () => void; onDelete: () => void }) {
   const scale = useSharedValue(1);
@@ -14,7 +14,7 @@ export function DailyActionItem({ action, dark, accent, streak, onToggle, onDele
     <View style={[styles.row, cardSurface(palette), shadow]}>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: action.is_completed }} onPress={onToggle} style={styles.checkPress}>
         <Animated.View style={[styles.checkbox, { borderColor: accent, backgroundColor: action.is_completed ? accent : 'transparent' }, animatedStyle]}>
-          {action.is_completed ? <Ionicons name="checkmark" size={17} color="#fff" /> : null}
+          {action.is_completed ? <Ionicons name="checkmark" size={17} color={textOn(accent)} /> : null}
         </Animated.View>
       </Pressable>
       <Text style={[styles.title, { color: action.is_completed ? palette.muted : palette.text, textDecorationLine: action.is_completed ? 'line-through' : 'none' }]}>{action.title}</Text>
