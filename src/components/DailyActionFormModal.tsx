@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ActionTemplate } from '../db/types';
-import { getPalette, radius, textOn } from '../theme';
+import { radius, textOn } from '../theme';
 import { ModalShell } from './ModalShell';
 
-export function DailyActionFormModal({ visible, dark, accent, templates, onClose, onSave, onApplyTemplate, onSaveTemplate, onDeleteTemplate }: {
+export function DailyActionFormModal({ visible, accent, templates, onClose, onSave, onApplyTemplate, onSaveTemplate, onDeleteTemplate }: {
   visible: boolean;
-  dark: boolean;
   accent: string;
   templates: ActionTemplate[];
   onClose: () => void;
@@ -16,7 +16,7 @@ export function DailyActionFormModal({ visible, dark, accent, templates, onClose
   onSaveTemplate: (title: string) => void;
   onDeleteTemplate: (template: ActionTemplate) => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [title, setTitle] = useState('');
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const save = () => {
@@ -35,7 +35,7 @@ export function DailyActionFormModal({ visible, dark, accent, templates, onClose
     ]);
   };
   return (
-    <ModalShell dark={dark} onClose={onClose} title="デイリーアクションを追加" visible={visible}>
+    <ModalShell onClose={onClose} title="デイリーアクションを追加" visible={visible}>
       {templates.length > 0 ? (
         <View style={styles.templateSection}>
           <Text style={[styles.templateLabel, { color: palette.muted }]}>テンプレートからワンタップ追加</Text>
@@ -59,7 +59,7 @@ export function DailyActionFormModal({ visible, dark, accent, templates, onClose
         <Ionicons color={saveAsTemplate ? accent : palette.muted} name={saveAsTemplate ? 'bookmark' : 'bookmark-outline'} size={18} />
         <Text style={[styles.templateToggleText, { color: palette.muted }]}>テンプレートにも保存する</Text>
       </Pressable>
-      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>追加する</Text></Pressable>
+      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary, palette) }]}>追加する</Text></Pressable>
     </ModalShell>
   );
 }

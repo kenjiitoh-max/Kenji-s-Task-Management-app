@@ -1,15 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring } from 'react-native-reanimated';
 import React, { useEffect } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { DailyAction } from '../db/types';
-import { cardSurface, getPalette, radius, shadow } from '../theme';
+import { cardSurface, radius, shadow } from '../theme';
 
-export function DailyActionItem({ action, dark, accent, streak, onToggle, onDelete }: { action: DailyAction; dark: boolean; accent: string; streak?: number; onToggle: () => void; onDelete: () => void }) {
+export function DailyActionItem({ action, accent, streak, onToggle, onDelete }: { action: DailyAction; accent: string; streak?: number; onToggle: () => void; onDelete: () => void }) {
   const scale = useSharedValue(1);
   useEffect(() => { if (action.is_completed) scale.value = withSequence(withSpring(1.3), withSpring(1)); }, [action.is_completed, scale]);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   return (
     <View style={[styles.row, cardSurface(palette), shadow]}>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: action.is_completed }} onPress={onToggle} style={styles.checkPress}>

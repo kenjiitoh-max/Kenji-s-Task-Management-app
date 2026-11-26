@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../hooks/useTheme';
 import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import Svg, { Rect, Text as SvgText } from 'react-native-svg';
-import { getPalette } from '../../theme';
 
 type Bar = { x: string; y: number };
 
-export function BarChart({ bars, color, dark, height = 160 }: {
+export function BarChart({ bars, color, height = 160 }: {
   bars: Bar[];
   color: string;
-  dark: boolean;
   height?: number;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [width, setWidth] = useState(0);
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
   if (bars.length === 0) return <Text style={[styles.empty, { color: palette.muted }]}>まだ記録がありません</Text>;

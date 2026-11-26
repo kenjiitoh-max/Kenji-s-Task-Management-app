@@ -1,11 +1,11 @@
 import React, { PropsWithChildren } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { getPalette } from '../theme';
 
-export function ModalShell({ visible, title, dark, onClose, children }: PropsWithChildren<{ visible: boolean; title: string; dark: boolean; onClose: () => void }>) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+export function ModalShell({ visible, title, onClose, children }: PropsWithChildren<{ visible: boolean; title: string; onClose: () => void }>) {
+  const { palette } = useTheme();
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+    <Modal animationType="slide" statusBarTranslucent transparent visible={visible} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <Pressable onPress={onClose} style={StyleSheet.absoluteFill} />
         <View style={[styles.sheet, { backgroundColor: palette.card }]}>
@@ -18,7 +18,7 @@ export function ModalShell({ visible, title, dark, onClose, children }: PropsWit
 }
 
 const styles = StyleSheet.create({
-  backdrop: { backgroundColor: '#00000055', flex: 1, justifyContent: 'flex-end' },
+  backdrop: { backgroundColor: '#00000080', flex: 1, justifyContent: 'flex-end' },
   cancel: { fontSize: 14, fontWeight: '600' },
   header: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 18 },
   sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 22, paddingBottom: 32 },

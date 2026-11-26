@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, TextInput } from 'react-native';
 import { BodyRecord } from '../db/types';
 import { localDate } from '../db/time';
-import { getPalette, textOn } from '../theme';
+import { textOn } from '../theme';
 import { isValidDate } from '../utils/date';
 import { ModalShell } from './ModalShell';
 
-export function BodyRecordModal({ visible, dark, record, onClose, onSave }: {
+export function BodyRecordModal({ visible, record, onClose, onSave }: {
   visible: boolean;
-  dark: boolean;
   record: BodyRecord | null;
   onClose: () => void;
   onSave: (date: string, weight: number, fat: number | null) => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [date, setDate] = useState(localDate());
   const [weight, setWeight] = useState('');
   const [fat, setFat] = useState('');
@@ -37,7 +37,7 @@ export function BodyRecordModal({ visible, dark, record, onClose, onSave }: {
     onClose();
   };
   return (
-    <ModalShell dark={dark} onClose={onClose} title="体重を記録" visible={visible}>
+    <ModalShell onClose={onClose} title="体重を記録" visible={visible}>
       <Text style={[styles.label, { color: palette.muted }]}>体重 (kg)</Text>
       <TextInput keyboardType="decimal-pad" onChangeText={(value) => { setWeight(value); setError(''); }} placeholder="例：62.4" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={weight} />
       <Text style={[styles.label, { color: palette.muted }]}>体脂肪率 (%)・任意</Text>
@@ -45,7 +45,7 @@ export function BodyRecordModal({ visible, dark, record, onClose, onSave }: {
       <Text style={[styles.label, { color: palette.muted }]}>日付</Text>
       <TextInput autoCapitalize="none" onChangeText={(value) => { setDate(value); setError(''); }} placeholder="YYYY-MM-DD" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={date} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>保存する</Text></Pressable>
+      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary, palette) }]}>保存する</Text></Pressable>
     </ModalShell>
   );
 }

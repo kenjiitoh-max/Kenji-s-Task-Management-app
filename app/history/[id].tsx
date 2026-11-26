@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
+import { useTheme } from '../../src/hooks/useTheme';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart } from '../../src/components/charts/BarChart';
@@ -13,7 +14,8 @@ import { Category, BodyRecord } from '../../src/db/types';
 import { getCategory } from '../../src/db/categories';
 import { currentStreak, dailyCompletionCounts, shiftDate, xpTrajectory } from '../../src/growth/history';
 import { isLineage, stageForLevel } from '../../src/growth/levels';
-import { cardSurface, getPalette, radius, shadow, textOn } from '../../src/theme';
+import { cardSurface, radius, shadow, textOn } from '../../src/theme';
+import type { Palette } from '../../src/theme';
 
 type Period = 30 | 90 | 'all';
 
@@ -33,8 +35,7 @@ export default function HistoryScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const categoryId = Number(id);
-  const dark = true;
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [category, setCategory] = useState<Category | null>(null);
   const [records, setRecords] = useState<BodyRecord[]>([]);
   const [completionDates, setCompletionDates] = useState<string[]>([]);
@@ -72,23 +73,23 @@ export default function HistoryScreen() {
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.periods}>
-          {([30, 90, 'all'] as Period[]).map((value) => <Pressable key={value} onPress={() => setPeriod(value)} style={[styles.period, { backgroundColor: period === value ? category.color : palette.card }]}><Text style={{ color: period === value ? textOn(category.color) : palette.muted, fontSize: 12, fontWeight: '700' }}>{value === 'all' ? '全期間' : `${value}日`}</Text></Pressable>)}
+          {([30, 90, 'all'] as Period[]).map((value) => <Pressable key={value} onPress={() => setPeriod(value)} style={[styles.period, { backgroundColor: period === value ? category.color : palette.card }]}><Text style={{ color: period === value ? textOn(category.color, palette) : palette.muted, fontSize: 12, fontWeight: '700' }}>{value === 'all' ? '全期間' : `${value}日`}</Text></Pressable>)}
         </View>
         {category.kind === 'weight' ? <>
           <HistoryCard palette={palette} title="体重の推移">
-            <LineChart color={category.color} dark={dark} points={weightPoints} unit="kg" />
+            <LineChart color={category.color} points={weightPoints} unit="kg" />
             {weightPoints.length ? <Text style={[styles.summary, { color: palette.muted }]}>{formatDifference(weightPoints[0].y, weightPoints[weightPoints.length - 1].y, 'kg')}</Text> : null}
           </HistoryCard>
           <HistoryCard palette={palette} title="体脂肪率の推移">
-            <LineChart color={category.color} dark={dark} points={fatPoints} unit="%" />
+            <LineChart color={category.color} points={fatPoints} unit="%" />
             {fatPoints.length ? <Text style={[styles.summary, { color: palette.muted }]}>{formatDifference(fatPoints[0].y, fatPoints[fatPoints.length - 1].y, '%')}</Text> : null}
           </HistoryCard>
         </> : <HistoryCard palette={palette} title="レベルアップの軌跡">
-          <LineChart color={category.color} dark={dark} markers={trajectory.levelUps.map((levelUp) => ({ x: levelUp.x, label: `Lv.${levelUp.level}` }))} points={trajectory.points} unit="XP" />
+          <LineChart color={category.color} markers={trajectory.levelUps.map((levelUp) => ({ x: levelUp.x, label: `Lv.${levelUp.level}` }))} points={trajectory.points} unit="XP" />
           {lineage && trajectory.levelUps.length ? <View style={[styles.levelList, { borderTopColor: palette.border }]}>{trajectory.levelUps.slice(-10).reverse().map((levelUp) => { const stage = stageForLevel(lineage, levelUp.level); return <View key={`${levelUp.x}-${levelUp.level}`} style={styles.levelRow}><Text style={[styles.levelDate, { color: palette.muted }]}>{levelUp.x}</Text><Text style={[styles.levelText, { color: palette.text }]}>{stage.emoji} Lv.{levelUp.level} {stage.name}</Text></View>; })}</View> : null}
         </HistoryCard>}
         <HistoryCard palette={palette} title="活動履歴">
-          <BarChart bars={activityPoints} color={category.color} dark={dark} />
+          <BarChart bars={activityPoints} color={category.color} />
           <Text style={[styles.summary, { color: palette.muted }]}>合計 {periodDates.length} 回 / 連続 {currentStreak(completionDates, today)} 日</Text>
         </HistoryCard>
       </ScrollView>
@@ -96,7 +97,7 @@ export default function HistoryScreen() {
   );
 }
 
-function HistoryCard({ children, palette, title }: { children: React.ReactNode; palette: ReturnType<typeof getPalette>; title: string }) {
+function HistoryCard({ children, palette, title }: { children: React.ReactNode; palette: Palette; title: string }) {
   return <View style={[styles.card, cardSurface(palette), shadow]}><Text style={[styles.cardTitle, { color: palette.text }]}>{title}</Text>{children}</View>;
 }
 

@@ -23,8 +23,7 @@ function Particle({ x, delay, size, color }: { x: number; delay: number; size: n
   return <Animated.View style={[styles.particle, { backgroundColor: color, borderRadius: size / 2, height: size, left: x, width: size }, style]} />;
 }
 
-export function CharacterCard({ dark, lineage, completions, pulseKey }: {
-  dark: boolean;
+export function CharacterCard({ lineage, completions, pulseKey }: {
   accent: string;
   lineage: Lineage;
   completions: number;
@@ -52,7 +51,7 @@ export function CharacterCard({ dark, lineage, completions, pulseKey }: {
   const shimmerStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${shimmer.value}deg` }] }));
   const shadowStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: 1 + float.value / 60 }], opacity: 0.35 + float.value / 80 }));
   return (
-    <View style={[styles.card, { backgroundColor: dark ? '#1B1230' : '#2A1B4A' }, shadow]}>
+    <View style={[styles.card, { backgroundColor: '#1B1230' }, shadow]}>
       <View style={styles.hero}>
         <Animated.View style={[styles.layer, shimmerStyle]}>
           <Svg height={HERO} viewBox="0 0 300 300" width={HERO}>

@@ -1,24 +1,24 @@
 import React from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { WorkoutSet } from '../db/types';
 import { ExerciseBest } from '../db/workouts';
-import { cardSurface, getPalette, radius, shadow, textOn } from '../theme';
+import { cardSurface, radius, shadow, textOn } from '../theme';
 
-export function WorkoutCard({ dark, accent, today, bests, onLog, onDelete }: {
-  dark: boolean;
+export function WorkoutCard({ accent, today, bests, onLog, onDelete }: {
   accent: string;
   today: WorkoutSet[];
   bests: ExerciseBest[];
   onLog: () => void;
   onDelete: (set: WorkoutSet) => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const volume = today.reduce((sum, set) => sum + set.weight_kg * set.reps * set.sets, 0);
   return (
     <View style={[styles.card, shadow, cardSurface(palette)]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: palette.text }]}>🏋️ 今日のトレ</Text>
-        <Pressable accessibilityLabel="種目を記録" onPress={onLog} style={[styles.logButton, { backgroundColor: accent }]}><Text style={[styles.logText, { color: textOn(accent) }]}>＋ 記録</Text></Pressable>
+        <Pressable accessibilityLabel="種目を記録" onPress={onLog} style={[styles.logButton, { backgroundColor: accent }]}><Text style={[styles.logText, { color: textOn(accent, palette) }]}>＋ 記録</Text></Pressable>
       </View>
       {today.length === 0 ? <Text style={[styles.empty, { color: palette.muted }]}>まだ記録なし。1 種目でも記録すると今日の XP が入る。</Text> : (
         <View>

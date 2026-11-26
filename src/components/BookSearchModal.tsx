@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BookSearchError, searchBooks, SearchFailure } from '../books/search';
 import { bookStatusLabels, bookStatuses, NewBook } from '../db/books';
 import { BookStatus } from '../db/types';
-import { getPalette, textOn } from '../theme';
+import { textOn } from '../theme';
 import { BookCover } from './BookCover';
 import { ModalShell } from './ModalShell';
 
@@ -13,8 +14,8 @@ const errorMessages: Record<SearchFailure, string> = {
   failed: '検索できませんでした。下のボタンでタイトルだけ追加できます。',
 };
 
-export function BookSearchModal({ visible, dark, onClose, onAdd }: { visible: boolean; dark: boolean; onClose: () => void; onAdd: (book: NewBook, status: BookStatus) => void }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+export function BookSearchModal({ visible, onClose, onAdd }: { visible: boolean; onClose: () => void; onAdd: (book: NewBook, status: BookStatus) => void }) {
+  const { palette } = useTheme();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<NewBook[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,10 +37,10 @@ export function BookSearchModal({ visible, dark, onClose, onAdd }: { visible: bo
   const addManually = () => { if (query.trim()) { onAdd({ title: query.trim(), authors: null, cover_url: null, external_id: null }, status); close(); } };
   const close = () => { setQuery(''); setResults([]); setError(null); onClose(); };
   return (
-    <ModalShell dark={dark} onClose={close} title="本を追加" visible={visible}>
+    <ModalShell onClose={close} title="本を追加" visible={visible}>
       <TextInput autoFocus onChangeText={setQuery} onSubmitEditing={search} placeholder="タイトルや著者で検索" placeholderTextColor={palette.muted} returnKeyType="search" style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={query} />
       <View style={styles.statusRow}>
-        {bookStatuses.map((entry) => <Pressable key={entry} onPress={() => setStatus(entry)} style={[styles.chip, { backgroundColor: status === entry ? palette.primary : palette.input }]}><Text style={[styles.chipText, { color: status === entry ? textOn(palette.primary) : palette.text }]}>{bookStatusLabels[entry]}</Text></Pressable>)}
+        {bookStatuses.map((entry) => <Pressable key={entry} onPress={() => setStatus(entry)} style={[styles.chip, { backgroundColor: status === entry ? palette.primary : palette.input }]}><Text style={[styles.chipText, { color: status === entry ? textOn(palette.primary, palette) : palette.text }]}>{bookStatusLabels[entry]}</Text></Pressable>)}
       </View>
       {loading ? <ActivityIndicator color={palette.primary} style={styles.loading} /> : null}
       {error ? <Text style={[styles.error, { color: palette.muted }]}>{error}</Text> : null}
@@ -50,7 +51,7 @@ export function BookSearchModal({ visible, dark, onClose, onAdd }: { visible: bo
         ListEmptyComponent={!loading && query.trim() ? <Pressable onPress={addManually} style={[styles.manual, { borderColor: palette.border }]}><Text style={[styles.manualText, { color: palette.primary }]}>「{query.trim()}」を表紙なしで追加</Text></Pressable> : undefined}
         renderItem={({ item }) => (
           <Pressable onPress={() => { onAdd(item, status); close(); }} style={[styles.row, { borderBottomColor: palette.border }]}>
-            <BookCover dark={dark} title={item.title} url={item.cover_url} width={44} />
+            <BookCover title={item.title} url={item.cover_url} width={44} />
             <View style={styles.rowText}>
               <Text numberOfLines={2} style={[styles.rowTitle, { color: palette.text }]}>{item.title}</Text>
               {item.authors ? <Text numberOfLines={1} style={[styles.rowAuthor, { color: palette.muted }]}>{item.authors}</Text> : null}

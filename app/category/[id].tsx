@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '../../src/hooks/useTheme';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Celebration } from '../../src/components/Celebration';
@@ -34,7 +35,6 @@ import { getLevelState, isLineage } from '../../src/growth/levels';
 import { hasStamp, milestoneFor } from '../../src/growth/stamps';
 import { fetchBodyRecords, healthKitSupported, requestBodyPermissions } from '../../src/health/healthkit';
 import { randomQuote } from '../../src/quotes/dailyQuote';
-import { getPalette } from '../../src/theme';
 
 function shouldShowQuote(): boolean {
   return Math.random() < 1 / 3;
@@ -44,8 +44,7 @@ export default function CategoryScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const categoryId = Number(id);
-  const dark = true;
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [category, setCategory] = useState<Category | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [actions, setActions] = useState<DailyAction[]>([]);
@@ -196,24 +195,24 @@ export default function CategoryScreen() {
         keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={
           <View>
-            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} dark={dark} importing={importingHealth} latest={latest} onEditProfile={() => setProfileModal(true)} onImportHealth={healthKitSupported ? importHealth : undefined} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} dark={dark} lineage={category.kind} pulseKey={pulseKey} /> : null}
-            {category.kind === 'reader' ? <BookshelfCard accent={category.color} categoryId={categoryId} dark={dark} onPress={() => router.push(`/books/${id}`)} /> : null}
-            {category.kind === 'athlete' ? <WorkoutCard accent={category.color} bests={bests} dark={dark} onDelete={(set) => Alert.alert('削除', `${set.exercise} の記録を削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteWorkoutSet(getDb(), set.id); refresh(); } }])} onLog={() => setWorkoutModal(true)} today={todaySets} /> : null}
-            <StampCard accent={category.color} dark={dark} dates={stampDates} kind={category.kind} pulseKey={stampPulse} today={localDate()} />
+            {category.kind === 'weight' ? <BodyStatusCard accent={category.color} importing={importingHealth} latest={latest} onEditProfile={() => setProfileModal(true)} onImportHealth={healthKitSupported ? importHealth : undefined} onRecord={() => setRecordModal(true)} profile={profile} records={records} /> : isLineage(category.kind) ? <CharacterCard accent={category.color} completions={completions} lineage={category.kind} pulseKey={pulseKey} /> : null}
+            {category.kind === 'reader' ? <BookshelfCard accent={category.color} categoryId={categoryId} onPress={() => router.push(`/books/${id}`)} /> : null}
+            {category.kind === 'athlete' ? <WorkoutCard accent={category.color} bests={bests} onDelete={(set) => Alert.alert('削除', `${set.exercise} の記録を削除しますか？`, [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteWorkoutSet(getDb(), set.id); refresh(); } }])} onLog={() => setWorkoutModal(true)} today={todaySets} /> : null}
+            <StampCard accent={category.color} dates={stampDates} kind={category.kind} pulseKey={stampPulse} today={localDate()} />
             <Text style={[styles.section, { color: palette.text }]}>ゴール</Text>
-            <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard dark={dark} goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
+            <View style={styles.goals}>{(['short', 'medium', 'long'] as GoalTerm[]).map((term) => <GoalCard goal={goalFor(term)} key={term} onPress={() => setGoalTerm(term)} term={term} />)}</View>
             <Text style={[styles.section, { color: palette.text }]}>今日のデイリーアクション</Text>
             {actions.length === 0 ? <Text style={[styles.empty, { color: palette.muted }]}>今日やることを追加しましょう。</Text> : null}
           </View>
         }
-        renderItem={({ item }) => <DailyActionItem action={item} accent={category.color} dark={dark} streak={actionStreaks.find((s) => s.id === item.id)?.streak} onDelete={() => Alert.alert('削除', 'このアクションを削除しますか？', [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteDailyAction(getDb(), item.id); refresh(); } }])} onToggle={() => toggle(item)} />}
+        renderItem={({ item }) => <DailyActionItem action={item} accent={category.color} streak={actionStreaks.find((s) => s.id === item.id)?.streak} onDelete={() => Alert.alert('削除', 'このアクションを削除しますか？', [{ text: 'キャンセル' }, { text: '削除', style: 'destructive', onPress: () => { deleteDailyAction(getDb(), item.id); refresh(); } }])} onToggle={() => toggle(item)} />}
       />
       <Fab color={category.color} onPress={() => setActionModal(true)} />
-      <DailyActionFormModal accent={category.color} dark={dark} onApplyTemplate={(template) => { applyActionTemplate(getDb(), template.id); refresh(); }} onClose={() => setActionModal(false)} onDeleteTemplate={(template) => { deleteActionTemplate(getDb(), template.id); refresh(); }} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} onSaveTemplate={(title) => { createActionTemplate(getDb(), categoryId, title); refresh(); }} templates={templates} visible={actionModal} />
-      {category.kind === 'athlete' ? <WorkoutLogModal bestFor={(exercise) => getExerciseBest(getDb(), categoryId, exercise)} dark={dark} lastSet={(exercise) => getLastSet(getDb(), categoryId, exercise)} onClose={() => setWorkoutModal(false)} onSave={logWorkout} recent={recent} visible={workoutModal} /> : null}
-      <BodyRecordModal dark={dark} onClose={() => setRecordModal(false)} onSave={(date, weight, fat) => { upsertBodyRecord(getDb(), date, weight, fat); refresh(); }} record={records.find((record) => record.date === localDate()) || null} visible={recordModal} />
-      <BodyProfileModal dark={dark} onClose={() => setProfileModal(false)} onSave={(height, sex) => { saveBodyProfile(getDb(), { height_cm: height, sex }); refresh(); }} profile={profile} visible={profileModal} />
-      {goalTerm ? <GoalFormModal dark={dark} goal={goalFor(goalTerm)} onClose={() => setGoalTerm(null)} onDelete={() => { const goal = goalFor(goalTerm); if (goal) deleteGoal(getDb(), goal.id); refresh(); }} onSave={(description, date) => { upsertGoal(getDb(), categoryId, goalTerm, description, date); refresh(); }} term={goalTerm} visible /> : null}
+      <DailyActionFormModal accent={category.color} onApplyTemplate={(template) => { applyActionTemplate(getDb(), template.id); refresh(); }} onClose={() => setActionModal(false)} onDeleteTemplate={(template) => { deleteActionTemplate(getDb(), template.id); refresh(); }} onSave={(title) => { createDailyAction(getDb(), categoryId, title); refresh(); }} onSaveTemplate={(title) => { createActionTemplate(getDb(), categoryId, title); refresh(); }} templates={templates} visible={actionModal} />
+      {category.kind === 'athlete' ? <WorkoutLogModal bestFor={(exercise) => getExerciseBest(getDb(), categoryId, exercise)} lastSet={(exercise) => getLastSet(getDb(), categoryId, exercise)} onClose={() => setWorkoutModal(false)} onSave={logWorkout} recent={recent} visible={workoutModal} /> : null}
+      <BodyRecordModal onClose={() => setRecordModal(false)} onSave={(date, weight, fat) => { upsertBodyRecord(getDb(), date, weight, fat); refresh(); }} record={records.find((record) => record.date === localDate()) || null} visible={recordModal} />
+      <BodyProfileModal onClose={() => setProfileModal(false)} onSave={(height, sex) => { saveBodyProfile(getDb(), { height_cm: height, sex }); refresh(); }} profile={profile} visible={profileModal} />
+      {goalTerm ? <GoalFormModal goal={goalFor(goalTerm)} onClose={() => setGoalTerm(null)} onDelete={() => { const goal = goalFor(goalTerm); if (goal) deleteGoal(getDb(), goal.id); refresh(); }} onSave={(description, date) => { upsertGoal(getDb(), categoryId, goalTerm, description, date); refresh(); }} term={goalTerm} visible /> : null}
       <Celebration big={celebration.big} celebrationId={celebration.celebrationId} completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
       <RewardOverlay accent={category.color} onDismiss={dismissReward} reward={reward} />
     </SafeAreaView>

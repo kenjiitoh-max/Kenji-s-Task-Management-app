@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
+import { useTheme } from '../src/hooks/useTheme';
 import { Alert, Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,7 +13,7 @@ import { getDb } from '../src/db/database';
 import { addDeal, deleteDeal, listDeals, NewDeal } from '../src/db/deals';
 import { localDate } from '../src/db/time';
 import { Deal } from '../src/db/types';
-import { getPalette, radius, shadow, textOn } from '../src/theme';
+import { radius, shadow, textOn } from '../src/theme';
 
 const GOLD = '#E2C069';
 const GOLD_DEEP = '#B8892B';
@@ -22,8 +23,7 @@ const shortDate = (date: string) => `${Number(date.slice(5, 7))}/${Number(date.s
 
 export default function DealsScreen() {
   const router = useRouter();
-  const dark = true;
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [logOpen, setLogOpen] = useState(false);
   const [celebration, setCelebration] = useState(0);
@@ -55,7 +55,7 @@ export default function DealsScreen() {
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.back}><Ionicons color={palette.text} name="arrow-back" size={24} /></Pressable>
         <Text style={[styles.title, { color: palette.text }]}>💰 Deal Vault</Text>
-        <Pressable accessibilityLabel="ディールを記録" onPress={() => setLogOpen(true)} style={[styles.addButton, { backgroundColor: palette.gold }]}><Text style={[styles.addText, { color: textOn(palette.gold) }]}>＋ 獲得</Text></Pressable>
+        <Pressable accessibilityLabel="ディールを記録" onPress={() => setLogOpen(true)} style={[styles.addButton, { backgroundColor: palette.gold }]}><Text style={[styles.addText, { color: textOn(palette.gold, palette) }]}>＋ 獲得</Text></Pressable>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.hero, shadow]}>
@@ -85,7 +85,7 @@ export default function DealsScreen() {
 
         <View style={[styles.card, shadow, { backgroundColor: palette.card, borderColor: palette.border }]}>
           <Text style={[styles.cardTitle, { color: palette.text }]}>📈 累計の積み上げ (千 USD)</Text>
-          <LineChart color={palette.gold} dark={dark} points={curve} unit="k" />
+          <LineChart color={palette.gold} points={curve} unit="k" />
         </View>
 
         <View style={[styles.card, shadow, { backgroundColor: palette.card, borderColor: palette.border }]}>
@@ -109,7 +109,7 @@ export default function DealsScreen() {
             <View style={styles.lootBody}>
               <View style={styles.lootTop}>
                 <Text style={[styles.lootAmount, { color: palette.text }]}>{formatUsd(deal.amount_usd)}</Text>
-                <View style={[styles.badge, { backgroundColor: deal.kind === 'new' ? palette.gold : palette.input }]}><Text style={[styles.badgeText, { color: deal.kind === 'new' ? textOn(palette.gold) : palette.muted }]}>{deal.kind === 'new' ? 'NEW' : 'RENEWAL'}</Text></View>
+                <View style={[styles.badge, { backgroundColor: deal.kind === 'new' ? palette.gold : palette.input }]}><Text style={[styles.badgeText, { color: deal.kind === 'new' ? textOn(palette.gold, palette) : palette.muted }]}>{deal.kind === 'new' ? 'NEW' : 'RENEWAL'}</Text></View>
               </View>
               <Text style={[styles.lootDetail, { color: palette.muted }]}>{deal.closed_on.replace(/-/g, '/')} ・ @{deal.fx_rate.toFixed(2)} ・ {formatJpy(dealJpy(deal))}</Text>
             </View>
@@ -118,7 +118,7 @@ export default function DealsScreen() {
         ))}
         {deals.length > 0 ? <Text style={[styles.hint, { color: palette.muted }]}>長押しで削除</Text> : null}
       </ScrollView>
-      <DealLogModal dark={dark} onClose={() => setLogOpen(false)} onSave={save} visible={logOpen} />
+      <DealLogModal onClose={() => setLogOpen(false)} onSave={save} visible={logOpen} />
       {celebration > 0 ? <ConfettiCannon key={celebration} autoStart colors={[GOLD, GOLD_DEEP, '#8B5FC7', '#FFFFFF']} count={180} fadeOut origin={{ x: Dimensions.get('window').width / 2, y: -20 }} /> : null}
       <Toast message={toast} visible={toast !== ''} />
     </SafeAreaView>

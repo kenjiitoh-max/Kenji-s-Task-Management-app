@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { Category } from '../db/types';
-import { getPalette, radius, shadow } from '../theme';
+import { radius, shadow } from '../theme';
 
 function LivingEmoji({ emoji, color, seed }: { emoji: string; color: string; seed: number }) {
   const bob = useSharedValue(0);
@@ -49,7 +50,6 @@ function StreakFlame({ days, accent }: { days: number; accent: string }) {
 export function CategoryCard({
   category,
   progress,
-  dark,
   onPress,
   onLongPress,
   subtitle,
@@ -60,7 +60,6 @@ export function CategoryCard({
 }: {
   category: Category;
   progress: { total: number; completed: number };
-  dark: boolean;
   onPress: () => void;
   onLongPress?: () => void;
   subtitle?: string;
@@ -69,7 +68,7 @@ export function CategoryCard({
   streaks?: { id: number; title: string; streak: number }[];
   categoryStreak?: number;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const ratio = progress.total ? progress.completed / progress.total : 0;
   const accent = palette.gold;
   return (

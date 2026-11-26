@@ -1,12 +1,13 @@
 import React from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BodyRecord, BodyProfile } from '../db/types';
 import { getBodyStatus, nextFatStep } from '../body/bodyMetrics';
-import { cardSurface, getPalette, radius, shadow, textOn } from '../theme';
+import { cardSurface, radius, readableAccent, shadow, textOn } from '../theme';
+import type { Palette } from '../theme';
 import { BodyAvatar, bodyAvatarName } from './BodyAvatar';
 
-export function BodyStatusCard({ dark, accent, latest, profile, records, onRecord, onEditProfile, onImportHealth, importing }: {
-  dark: boolean;
+export function BodyStatusCard({ accent, latest, profile, records, onRecord, onEditProfile, onImportHealth, importing }: {
   accent: string;
   latest: BodyRecord | null;
   profile: BodyProfile;
@@ -16,28 +17,28 @@ export function BodyStatusCard({ dark, accent, latest, profile, records, onRecor
   onImportHealth?: () => void;
   importing?: boolean;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const history = [...(records || [])].reverse().slice(-7);
   const min = Math.min(...history.map((record) => record.weight_kg));
   const max = Math.max(...history.map((record) => record.weight_kg));
   const status = latest && profile.height_cm ? getBodyStatus(latest.weight_kg, latest.body_fat_pct, profile.height_cm, profile.sex) : null;
   return (
     <View style={[styles.card, cardSurface(palette), shadow]}>
-      {!profile.height_cm ? <View style={styles.empty}><Text style={styles.emptyEmoji}>📏</Text><Text style={[styles.emptyTitle, { color: palette.text }]}>身長を設定するとBMIとステージが表示されます</Text><ProfileButton palette={palette} onPress={onEditProfile} /></View> : !latest ? <View style={styles.empty}><Text style={styles.emptyEmoji}>⚖️</Text><Text style={[styles.emptyTitle, { color: palette.text }]}>最初の体重を記録しましょう</Text><Pressable onPress={onRecord} style={[styles.primaryButton, { backgroundColor: accent }]}><Text style={[styles.primaryText, { color: textOn(accent) }]}>今日の体重を記録</Text></Pressable>{onImportHealth ? <Pressable disabled={importing} onPress={onImportHealth} style={[styles.healthButton, { backgroundColor: `${accent}18`, opacity: importing ? 0.6 : 1 }]}><Text style={[styles.healthText, { color: accent }]}>{importing ? '取り込み中…' : '♥ ヘルスケアから取り込む'}</Text></Pressable> : null}</View> : status ? (
+      {!profile.height_cm ? <View style={styles.empty}><Text style={styles.emptyEmoji}>📏</Text><Text style={[styles.emptyTitle, { color: palette.text }]}>身長を設定するとBMIとステージが表示されます</Text><ProfileButton palette={palette} onPress={onEditProfile} /></View> : !latest ? <View style={styles.empty}><Text style={styles.emptyEmoji}>⚖️</Text><Text style={[styles.emptyTitle, { color: palette.text }]}>最初の体重を記録しましょう</Text><Pressable onPress={onRecord} style={[styles.primaryButton, { backgroundColor: accent }]}><Text style={[styles.primaryText, { color: textOn(accent, palette) }]}>今日の体重を記録</Text></Pressable>{onImportHealth ? <Pressable disabled={importing} onPress={onImportHealth} style={[styles.healthButton, { backgroundColor: `${accent}18`, opacity: importing ? 0.6 : 1 }]}><Text style={[styles.healthText, { color: readableAccent(accent, palette) }]}>{importing ? '取り込み中…' : '♥ ヘルスケアから取り込む'}</Text></Pressable> : null}</View> : status ? (
         <>
-          <View style={styles.top}><View style={styles.hero}><BodyAvatar size={120} stageKey={status.bmiStage.key} /><Text style={[styles.heroName, { color: status.bmiStage.color }]}>{bodyAvatarName(status.bmiStage.key)}</Text></View><View style={styles.summary}><Text style={[styles.weight, { color: palette.text }]}>現在 {latest.weight_kg.toFixed(1)} kg</Text>{latest.body_fat_pct != null ? <Text style={[styles.fat, { color: palette.muted }]}>体脂肪 {latest.body_fat_pct.toFixed(1)}%</Text> : null}<View style={styles.chips}><Text style={[styles.chip, { backgroundColor: `${status.bmiStage.color}66`, color: palette.text }]}>BMI {status.bmi.toFixed(1)} · {status.bmiStage.label}</Text>{status.fatStage ? <Text style={[styles.chip, { backgroundColor: `${status.fatStage.color}66`, color: palette.text }]}>体脂肪 {status.fatStage.label}</Text> : null}</View></View></View>
+          <View style={styles.top}><View style={styles.hero}><BodyAvatar size={120} stageKey={status.bmiStage.key} /><Text style={[styles.heroName, { color: readableAccent(status.bmiStage.color, palette) }]}>{bodyAvatarName(status.bmiStage.key)}</Text></View><View style={styles.summary}><Text style={[styles.weight, { color: palette.text }]}>現在 {latest.weight_kg.toFixed(1)} kg</Text>{latest.body_fat_pct != null ? <Text style={[styles.fat, { color: palette.muted }]}>体脂肪 {latest.body_fat_pct.toFixed(1)}%</Text> : null}<View style={styles.chips}><Text style={[styles.chip, { backgroundColor: `${status.bmiStage.color}66`, color: palette.text }]}>BMI {status.bmi.toFixed(1)} · {status.bmiStage.label}</Text>{status.fatStage ? <Text style={[styles.chip, { backgroundColor: `${status.fatStage.color}66`, color: palette.text }]}>体脂肪 {status.fatStage.label}</Text> : null}</View></View></View>
           <Text style={[styles.description, { color: palette.muted }]}>{status.bmiStage.description}</Text>
-          {status.next ? <View style={[styles.nextBox, { backgroundColor: `${accent}18` }]}><Text style={[styles.caption, { color: accent }]}>次のステージ</Text><Text style={[styles.nextMessage, { color: palette.text }]}>{status.next.message}</Text></View> : null}
+          {status.next ? <View style={[styles.nextBox, { backgroundColor: `${accent}18` }]}><Text style={[styles.caption, { color: readableAccent(accent, palette) }]}>次のステージ</Text><Text style={[styles.nextMessage, { color: palette.text }]}>{status.next.message}</Text></View> : null}
           {latest.body_fat_pct != null && nextFatStep(latest.weight_kg, latest.body_fat_pct, profile.sex) ? <Text style={[styles.fatNext, { color: palette.muted }]}>{nextFatStep(latest.weight_kg, latest.body_fat_pct, profile.sex)}</Text> : null}
-          <View style={styles.buttons}><Pressable onPress={onRecord} style={[styles.primaryButton, { backgroundColor: accent }]}><Text style={[styles.primaryText, { color: textOn(accent) }]}>今日の体重を記録</Text></Pressable><Pressable onPress={onEditProfile} style={styles.edit}><Text style={[styles.editText, { color: palette.muted }]}>⚙ 身長・性別</Text></Pressable>{onImportHealth ? <Pressable disabled={importing} onPress={onImportHealth} style={[styles.healthButton, { backgroundColor: `${accent}18`, opacity: importing ? 0.6 : 1 }]}><Text style={[styles.healthText, { color: accent }]}>{importing ? '取り込み中…' : '♥ ヘルスケアから取り込む'}</Text></Pressable> : null}</View>
+          <View style={styles.buttons}><Pressable onPress={onRecord} style={[styles.primaryButton, { backgroundColor: accent }]}><Text style={[styles.primaryText, { color: textOn(accent, palette) }]}>今日の体重を記録</Text></Pressable><Pressable onPress={onEditProfile} style={styles.edit}><Text style={[styles.editText, { color: palette.muted }]}>⚙ 身長・性別</Text></Pressable>{onImportHealth ? <Pressable disabled={importing} onPress={onImportHealth} style={[styles.healthButton, { backgroundColor: `${accent}18`, opacity: importing ? 0.6 : 1 }]}><Text style={[styles.healthText, { color: readableAccent(accent, palette) }]}>{importing ? '取り込み中…' : '♥ ヘルスケアから取り込む'}</Text></Pressable> : null}</View>
         </>
       ) : null}
-      {history.length ? <View style={[styles.history, { borderTopColor: palette.border }]}>{history.map((record, index) => { const previous = history[index - 1]; const delta = previous ? record.weight_kg - previous.weight_kg : 0; const height = max === min ? 50 : 24 + ((record.weight_kg - min) / (max - min)) * 36; return <View key={record.id} style={styles.historyItem}><View style={styles.barArea}><View style={[styles.bar, { backgroundColor: accent, height }]} /></View><Text style={[styles.date, { color: palette.muted }]}>{record.date.slice(5).replace('-', '/')}</Text>{index > 0 ? <Text style={[styles.delta, { color: delta <= 0 ? '#6DAA7B' : palette.muted }]}>{delta <= 0 ? '▼' : '▲'}{Math.abs(delta).toFixed(1)}kg</Text> : null}</View>; })}</View> : null}
+      {history.length ? <View style={[styles.history, { borderTopColor: palette.border }]}>{history.map((record, index) => { const previous = history[index - 1]; const delta = previous ? record.weight_kg - previous.weight_kg : 0; const height = max === min ? 50 : 24 + ((record.weight_kg - min) / (max - min)) * 36; return <View key={record.id} style={styles.historyItem}><View style={styles.barArea}><View style={[styles.bar, { backgroundColor: accent, height }]} /></View><Text style={[styles.date, { color: palette.muted }]}>{record.date.slice(5).replace('-', '/')}</Text>{index > 0 ? <Text style={[styles.delta, { color: delta <= 0 ? readableAccent('#6DAA7B', palette) : palette.muted }]}>{delta <= 0 ? '▼' : '▲'}{Math.abs(delta).toFixed(1)}kg</Text> : null}</View>; })}</View> : null}
     </View>
   );
 }
 
-function ProfileButton({ palette, onPress }: { palette: ReturnType<typeof getPalette>; onPress: () => void }) {
+function ProfileButton({ palette, onPress }: { palette: Palette; onPress: () => void }) {
   return <Pressable onPress={onPress} style={[styles.profileButton, { backgroundColor: palette.input }]}><Text style={{ color: palette.text, fontWeight: '700' }}>身長・性別を設定</Text></Pressable>;
 }
 
