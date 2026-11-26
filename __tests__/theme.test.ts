@@ -1,4 +1,4 @@
-import { textOn } from '../src/contrast';
+import { readableAccent, textOn } from '../src/contrast';
 import { accentColors, getPalette, isThemeName, palettes, resolveScheme, themeNames } from '../src/theme';
 
 describe('textOn', () => {
@@ -42,5 +42,14 @@ describe('theme selection', () => {
     expect(isThemeName('system')).toBe(true);
     expect(isThemeName('unspecified')).toBe(false);
     expect(isThemeName(null)).toBe(false);
+  });
+});
+
+describe('readableAccent', () => {
+  it('keeps pastel accents on dark cards and falls back to text color on light cards', () => {
+    expect(readableAccent('#B2F2BB', palettes.dark)).toBe('#B2F2BB');
+    expect(readableAccent('#B2F2BB', palettes.light)).toBe(palettes.light.text);
+    expect(readableAccent('#E2C069', palettes.light)).toBe(palettes.light.text);
+    expect(readableAccent('#6A3FA3', palettes.light)).toBe('#6A3FA3');
   });
 });

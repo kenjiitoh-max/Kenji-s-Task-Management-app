@@ -1,7 +1,7 @@
 import { Platform, type ColorSchemeName } from 'react-native';
-import { textOn } from './contrast';
+import { readableAccent, textOn } from './contrast';
 
-export { textOn };
+export { readableAccent, textOn };
 
 export const palettes = {
   light: {
