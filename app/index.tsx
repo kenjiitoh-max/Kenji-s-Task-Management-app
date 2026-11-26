@@ -1,6 +1,8 @@
 import { useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '../src/hooks/useTheme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CategoryCard } from '../src/components/CategoryCard';
 import { DraggableList } from '../src/components/DraggableList';
@@ -21,14 +23,12 @@ import { LineageAvatar } from '../src/components/LineageAvatar';
 import { subscribe } from '../src/db/dailyResetEvents';
 import { Category, Deal } from '../src/db/types';
 import { BodyAvatar } from '../src/components/BodyAvatar';
-import { getPalette } from '../src/theme';
 import { quoteForDate } from '../src/quotes/dailyQuote';
 import { localDate } from '../src/db/time';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const dark = true;
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [categories, setCategories] = useState<Category[]>([]);
   const [progress, setProgress] = useState<Record<number, { total: number; completed: number }>>({});
   const [subtitles, setSubtitles] = useState<Record<number, { subtitle?: string; emoji?: string; bodyStage?: string; lineage?: Lineage; stageIndex?: number }>>({});
@@ -68,12 +68,12 @@ export default function HomeScreen() {
   const date = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: palette.background }]}>
-      <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View><KobeJerseys /></View>
+      <View style={styles.header}><View><Text style={[styles.kicker, { color: palette.muted }]}>{date}</Text><Text style={[styles.greeting, { color: palette.muted }]}>今日も小さな一歩から</Text><Text style={[styles.title, { color: palette.text }]}>My Goals</Text></View><View style={styles.headerActions}><Pressable accessibilityLabel="設定" onPress={() => router.push('/settings')} style={styles.settingsButton} testID="open-settings"><Ionicons color={palette.muted} name="settings-outline" size={22} /></Pressable><KobeJerseys /></View></View>
       <DraggableList
         contentContainerStyle={styles.list}
         data={categories}
         keyExtractor={(item) => String(item.id)}
-        ListHeaderComponent={<><QuoteCard dark={dark} favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard dark={dark} deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>}
+        ListHeaderComponent={<><QuoteCard favorite={favoriteQuote} onPress={() => router.push({ pathname: '/quotes', params: { id: quoteForDate(localDate()).id } })} onToggleFavorite={() => { const quote = quoteForDate(localDate()); setFavoriteQuote(toggleFavorite(getDb(), quote.id)); }} quote={quoteForDate(localDate())} /><DealVaultCard deals={deals} onPress={() => router.push('/deals')} today={localDate()} /></>}
         ListEmptyComponent={<Text style={[styles.empty, { color: palette.muted }]}>カテゴリーを追加して、今日の一歩を始めましょう。</Text>}
         onLongPress={confirmDelete}
         onPress={(item) => router.push(`/category/${item.id}`)}
@@ -81,11 +81,11 @@ export default function HomeScreen() {
         renderItem={(item) => {
           const sub = subtitles[item.id];
           const character = sub?.bodyStage ? <BodyAvatar seed={item.id} size={92} stageKey={sub.bodyStage} /> : sub?.lineage ? <LineageAvatar lineage={sub.lineage} seed={item.id} size={92} stageIndex={sub.stageIndex ?? 0} /> : undefined;
-          return <CategoryCard category={item} categoryStreak={categoryStreaks[item.id] ?? 0} character={character} dark={dark} emoji={sub?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={sub?.subtitle} />;
+          return <CategoryCard category={item} categoryStreak={categoryStreaks[item.id] ?? 0} character={character} emoji={sub?.emoji} onPress={() => router.push(`/category/${item.id}`)} progress={progress[item.id] || { total: 0, completed: 0 }} streaks={streaks[item.id]} subtitle={sub?.subtitle} />;
         }}
       />
       <Fab color={palette.primary} onPress={() => setModalVisible(true)} />
-      <CategoryFormModal dark={dark} onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
+      <CategoryFormModal onClose={() => setModalVisible(false)} onSave={(name, color) => { createCategory(getDb(), name, color); refresh(); }} visible={modalVisible} />
     </SafeAreaView>
   );
 }
@@ -93,9 +93,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   empty: { fontSize: 15, paddingHorizontal: 8, paddingTop: 40, textAlign: 'center' },
   header: { alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 22, paddingTop: 20 },
+  headerActions: { alignItems: 'center', flexDirection: 'row', gap: 12 },
   greeting: { fontSize: 14, marginBottom: 2 },
   kicker: { fontSize: 14, marginBottom: 6 },
   list: { padding: 22, paddingBottom: 100 },
   safe: { flex: 1 },
+  settingsButton: { padding: 5 },
   title: { fontSize: 32, fontWeight: '800', letterSpacing: 0.3 },
 });

@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ExerciseBest, NewWorkoutSet } from '../db/workouts';
-import { getPalette, textOn } from '../theme';
+import { textOn } from '../theme';
 import { BodyPart, bodyParts, exercises, findExercise } from '../workout/exercises';
 import { ModalShell } from './ModalShell';
 
-function Stepper({ label, value, onChange, step, min, dark, unit }: { label: string; value: string; onChange: (value: string) => void; step: number; min: number; dark: boolean; unit: string }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+function Stepper({ label, value, onChange, step, min, unit }: { label: string; value: string; onChange: (value: string) => void; step: number; min: number; unit: string }) {
+  const { palette } = useTheme();
   const bump = (delta: number) => { const next = Math.max(min, Math.round((Number(value) || 0) * 100 + delta * 100) / 100); onChange(String(next)); };
   return (
     <View style={styles.stepper}>
@@ -21,16 +22,15 @@ function Stepper({ label, value, onChange, step, min, dark, unit }: { label: str
   );
 }
 
-export function WorkoutLogModal({ visible, dark, recent, lastSet, bestFor, onClose, onSave }: {
+export function WorkoutLogModal({ visible, recent, lastSet, bestFor, onClose, onSave }: {
   visible: boolean;
-  dark: boolean;
   recent: string[];
   lastSet: (exercise: string) => NewWorkoutSet | null;
   bestFor: (exercise: string) => ExerciseBest | null;
   onClose: () => void;
   onSave: (set: NewWorkoutSet) => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [part, setPart] = useState<BodyPart | 'recent'>(recent.length ? 'recent' : '胸');
   const [exercise, setExercise] = useState<string | null>(null);
   const [weight, setWeight] = useState('20');
@@ -58,25 +58,25 @@ export function WorkoutLogModal({ visible, dark, recent, lastSet, bestFor, onClo
   };
   const best = exercise ? bestFor(exercise) : null;
   return (
-    <ModalShell dark={dark} onClose={onClose} title={exercise ? exercise : '種目を選ぶ'} visible={visible}>
+    <ModalShell onClose={onClose} title={exercise ? exercise : '種目を選ぶ'} visible={visible}>
       {exercise ? (
         <View>
           <Pressable onPress={() => setExercise(null)}><Text style={[styles.change, { color: palette.primary }]}>← 種目を変える</Text></Pressable>
           {best ? <Text style={[styles.best, { color: palette.muted }]}>自己ベスト: {best.weight_kg}kg × {best.reps}回 ({best.date})</Text> : <Text style={[styles.best, { color: palette.muted }]}>初めての種目。今日が自己ベストになる。</Text>}
           <View style={styles.steppers}>
-            <Stepper dark={dark} label="重量" min={0} onChange={(value) => { setWeight(value); setError(''); }} step={2.5} unit="kg" value={weight} />
-            <Stepper dark={dark} label="回数" min={1} onChange={(value) => { setReps(value); setError(''); }} step={1} unit="回" value={reps} />
-            <Stepper dark={dark} label="セット" min={1} onChange={(value) => { setSets(value); setError(''); }} step={1} unit="set" value={sets} />
+            <Stepper label="重量" min={0} onChange={(value) => { setWeight(value); setError(''); }} step={2.5} unit="kg" value={weight} />
+            <Stepper label="回数" min={1} onChange={(value) => { setReps(value); setError(''); }} step={1} unit="回" value={reps} />
+            <Stepper label="セット" min={1} onChange={(value) => { setSets(value); setError(''); }} step={1} unit="set" value={sets} />
           </View>
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>記録する</Text></Pressable>
+          <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary, palette) }]}>記録する</Text></Pressable>
         </View>
       ) : (
         <View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.parts}>
             <View style={styles.partsRow}>
-              {recent.length ? <Pressable onPress={() => setPart('recent')} style={[styles.chip, { backgroundColor: part === 'recent' ? palette.primary : palette.input }]}><Text style={[styles.chipText, { color: part === 'recent' ? textOn(palette.primary) : palette.text }]}>最近</Text></Pressable> : null}
-              {bodyParts.map((entry) => <Pressable key={entry} onPress={() => setPart(entry)} style={[styles.chip, { backgroundColor: part === entry ? palette.primary : palette.input }]}><Text style={[styles.chipText, { color: part === entry ? textOn(palette.primary) : palette.text }]}>{entry}</Text></Pressable>)}
+              {recent.length ? <Pressable onPress={() => setPart('recent')} style={[styles.chip, { backgroundColor: part === 'recent' ? palette.primary : palette.input }]}><Text style={[styles.chipText, { color: part === 'recent' ? textOn(palette.primary, palette) : palette.text }]}>最近</Text></Pressable> : null}
+              {bodyParts.map((entry) => <Pressable key={entry} onPress={() => setPart(entry)} style={[styles.chip, { backgroundColor: part === entry ? palette.primary : palette.input }]}><Text style={[styles.chipText, { color: part === entry ? textOn(palette.primary, palette) : palette.text }]}>{entry}</Text></Pressable>)}
             </View>
           </ScrollView>
           <View style={styles.grid}>

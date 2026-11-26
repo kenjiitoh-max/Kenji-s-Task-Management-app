@@ -1,15 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { countBooksByStatus, listBooks } from '../db/books';
 import { getDb } from '../db/database';
 import { Book, BookStatus } from '../db/types';
-import { cardSurface, getPalette, radius, shadow } from '../theme';
+import { cardSurface, radius, shadow } from '../theme';
 import { BookCover } from './BookCover';
 
-export function BookshelfCard({ dark, accent, categoryId, onPress }: { dark: boolean; accent: string; categoryId: number; onPress: () => void }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+export function BookshelfCard({ accent, categoryId, onPress }: { accent: string; categoryId: number; onPress: () => void }) {
+  const { palette } = useTheme();
   const [reading, setReading] = useState<Book[]>([]);
   const [counts, setCounts] = useState<Record<BookStatus, number>>({ want: 0, reading: 0, done: 0 });
   useFocusEffect(useCallback(() => {
@@ -25,7 +26,7 @@ export function BookshelfCard({ dark, accent, categoryId, onPress }: { dark: boo
       </View>
       <Text style={[styles.counts, { color: palette.muted }]}>読んでる {counts.reading} ・ 読みたい {counts.want} ・ 読了 {counts.done}</Text>
       {reading.length > 0 ? (
-        <View style={styles.row}>{reading.map((book) => <BookCover dark={dark} key={book.id} title={book.title} url={book.cover_url} width={48} />)}</View>
+        <View style={styles.row}>{reading.map((book) => <BookCover key={book.id} title={book.title} url={book.cover_url} width={48} />)}</View>
       ) : <Text style={[styles.empty, { color: palette.muted }]}>いま読んでいる本を登録しよう。</Text>}
       <View style={[styles.plank, { backgroundColor: accent }]} />
     </Pressable>

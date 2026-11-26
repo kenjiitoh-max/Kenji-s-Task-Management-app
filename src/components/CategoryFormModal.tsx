@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { getPalette, accentColors, textOn } from '../theme';
+import { accentColors, textOn } from '../theme';
 import { ModalShell } from './ModalShell';
 
-export function CategoryFormModal({ visible, dark, onClose, onSave }: { visible: boolean; dark: boolean; onClose: () => void; onSave: (name: string, color: string) => void }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+export function CategoryFormModal({ visible, onClose, onSave }: { visible: boolean; onClose: () => void; onSave: (name: string, color: string) => void }) {
+  const { palette } = useTheme();
   const [name, setName] = useState('');
   const [color, setColor] = useState(accentColors[0]);
   const save = () => { if (name.trim()) { onSave(name.trim(), color); setName(''); onClose(); } };
   return (
-    <ModalShell dark={dark} onClose={onClose} title="カテゴリーを追加" visible={visible}>
+    <ModalShell onClose={onClose} title="カテゴリーを追加" visible={visible}>
       <TextInput autoFocus onChangeText={setName} placeholder="カテゴリー名" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={name} />
       <Text style={[styles.label, { color: palette.muted }]}>アクセントカラー</Text>
       <View style={styles.colors}>{accentColors.map((item) => <Pressable key={item} onPress={() => setColor(item)} style={[styles.color, { backgroundColor: item }, color === item && styles.selected]} />)}</View>
-      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>追加する</Text></Pressable>
+      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary, palette) }]}>追加する</Text></Pressable>
     </ModalShell>
   );
 }

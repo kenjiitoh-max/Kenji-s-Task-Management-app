@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BodyProfile, Sex } from '../db/types';
-import { getPalette, textOn } from '../theme';
+import { textOn } from '../theme';
 import { ModalShell } from './ModalShell';
 
-export function BodyProfileModal({ visible, dark, profile, onClose, onSave }: {
+export function BodyProfileModal({ visible, profile, onClose, onSave }: {
   visible: boolean;
-  dark: boolean;
   profile: BodyProfile;
   onClose: () => void;
   onSave: (height: number, sex: Sex) => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [height, setHeight] = useState('');
   const [sex, setSex] = useState<Sex>('male');
   const [error, setError] = useState('');
@@ -29,7 +29,7 @@ export function BodyProfileModal({ visible, dark, profile, onClose, onSave }: {
     onClose();
   };
   return (
-    <ModalShell dark={dark} onClose={onClose} title="プロフィール設定" visible={visible}>
+    <ModalShell onClose={onClose} title="プロフィール設定" visible={visible}>
       <Text style={[styles.label, { color: palette.muted }]}>身長 (cm)</Text>
       <TextInput keyboardType="decimal-pad" onChangeText={(value) => { setHeight(value); setError(''); }} placeholder="例：170" placeholderTextColor={palette.muted} style={[styles.input, { backgroundColor: palette.input, color: palette.text }]} value={height} />
       <Text style={[styles.label, { color: palette.muted }]}>性別</Text>
@@ -37,7 +37,7 @@ export function BodyProfileModal({ visible, dark, profile, onClose, onSave }: {
         {([['male', '男性'], ['female', '女性']] as const).map(([value, label]) => <Pressable key={value} onPress={() => setSex(value)} style={[styles.segmentButton, sex === value && { backgroundColor: palette.card }]}><Text style={{ color: sex === value ? palette.text : palette.muted, fontWeight: '700' }}>{label}</Text></Pressable>)}
       </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary) }]}>保存する</Text></Pressable>
+      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.primary }]}><Text style={[styles.saveText, { color: textOn(palette.primary, palette) }]}>保存する</Text></Pressable>
     </ModalShell>
   );
 }

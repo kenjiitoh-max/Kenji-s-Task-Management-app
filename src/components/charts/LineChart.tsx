@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../hooks/useTheme';
 import { LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Polyline, Text as SvgText } from 'react-native-svg';
-import { getPalette } from '../../theme';
 
 type Point = { x: string; y: number };
 type Marker = { x: string; label: string };
 
-export function LineChart({ points, color, dark, height = 160, unit, markers = [] }: {
+export function LineChart({ points, color, height = 160, unit, markers = [] }: {
   points: Point[];
   color: string;
-  dark: boolean;
   height?: number;
   unit?: string;
   markers?: Marker[];
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [width, setWidth] = useState(0);
   const onLayout = (event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width);
   if (points.length < 2) {

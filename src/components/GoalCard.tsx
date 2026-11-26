@@ -1,23 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Goal, GoalTerm } from '../db/types';
-import { getPalette, radius, shadow } from '../theme';
+import { radius, shadow } from '../theme';
 
 const labels: Record<GoalTerm, string> = { short: '短期', medium: '中期', long: '長期' };
 
 export function GoalCard({
   term,
   goal,
-  dark,
   onPress,
 }: {
   term: GoalTerm;
   goal?: Goal;
-  dark: boolean;
   onPress: () => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   return (
     <Pressable onPress={onPress} style={[styles.card, { backgroundColor: palette.card, borderColor: palette.border }]}>
       <View style={styles.header}>

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
+import { useTheme } from '../../src/hooks/useTheme';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BookCover } from '../../src/components/BookCover';
@@ -14,7 +15,7 @@ import { getDb } from '../../src/db/database';
 import { Book, BookStatus, Category } from '../../src/db/types';
 import { getLevelState } from '../../src/growth/levels';
 import { useCelebration } from '../../src/hooks/useCelebration';
-import { cardSurface, getPalette, radius, shadow } from '../../src/theme';
+import { cardSurface, radius, shadow } from '../../src/theme';
 
 const shelfEmoji: Record<BookStatus, string> = { reading: '📖', want: '🔖', done: '✅' };
 
@@ -22,8 +23,7 @@ export default function BookshelfScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const categoryId = Number(id);
-  const dark = true;
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const [category, setCategory] = useState<Category | null>(null);
   const [books, setBooks] = useState<Book[]>([]);
   const [searchModal, setSearchModal] = useState(false);
@@ -70,7 +70,7 @@ export default function BookshelfScreen() {
                   <View style={styles.row}>
                     {shelf.map((book) => (
                       <Pressable accessibilityLabel={book.title} key={book.id} onPress={() => openBook(book)} style={styles.book}>
-                        <BookCover dark={dark} title={book.title} url={book.cover_url} width={72} />
+                        <BookCover title={book.title} url={book.cover_url} width={72} />
                         <Text numberOfLines={2} style={[styles.bookTitle, { color: palette.text }]}>{book.title}</Text>
                       </Pressable>
                     ))}
@@ -84,7 +84,7 @@ export default function BookshelfScreen() {
         <Text style={[styles.hint, { color: palette.muted }]}>本をタップすると棚を移動できます。読了にすると読書キャラに 10 XP。</Text>
       </ScrollView>
       <Fab color={category.color} onPress={() => setSearchModal(true)} />
-      <BookSearchModal dark={dark} onAdd={(book, status) => withXp(() => addBook(getDb(), categoryId, book, status))} onClose={() => setSearchModal(false)} visible={searchModal} />
+      <BookSearchModal onAdd={(book, status) => withXp(() => addBook(getDb(), categoryId, book, status))} onClose={() => setSearchModal(false)} visible={searchModal} />
       <Celebration celebrationId={celebration.celebrationId} completeAll={celebration.completeAll} toastMessage={celebration.toastMessage} toastVisible={celebration.toastVisible} />
     </SafeAreaView>
   );

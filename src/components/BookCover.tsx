@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
-export function BookCover({ url, title, width = 64, dark }: { url: string | null; title: string; width?: number; dark: boolean }) {
+export function BookCover({ url, title, width = 64 }: { url: string | null; title: string; width?: number }) {
+  const { palette } = useTheme();
   const height = Math.round(width * 1.45);
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [url]);
@@ -9,8 +11,8 @@ export function BookCover({ url, title, width = 64, dark }: { url: string | null
     return <Image accessibilityLabel={`${title} の表紙`} onError={() => setFailed(true)} source={{ uri: url }} style={[styles.cover, { height, width }]} />;
   }
   return (
-    <View style={[styles.cover, styles.placeholder, { backgroundColor: dark ? '#3D2E56' : '#E8DFF4', height, width }]}>
-      <Text numberOfLines={4} style={[styles.placeholderText, { color: dark ? '#F6F0FB' : '#2B1B45', fontSize: Math.max(9, width / 7) }]}>{title}</Text>
+    <View style={[styles.cover, styles.placeholder, { backgroundColor: palette.input, height, width }]}>
+      <Text numberOfLines={4} style={[styles.placeholderText, { color: palette.text, fontSize: Math.max(9, width / 7) }]}>{title}</Text>
     </View>
   );
 }

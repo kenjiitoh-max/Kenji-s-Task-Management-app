@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { commissionJpy, commissionRates, dealKindLabels, dealKinds, formatJpy } from '../deals/commission';
 import { fetchUsdJpy } from '../deals/fx';
 import { NewDeal } from '../db/deals';
 import { localDate } from '../db/time';
 import { DealKind } from '../db/types';
-import { getPalette, textOn } from '../theme';
+import { textOn } from '../theme';
 import { ModalShell } from './ModalShell';
 
 const shiftDate = (date: string, days: number) => {
@@ -13,8 +14,8 @@ const shiftDate = (date: string, days: number) => {
   return localDate(new Date(y, m - 1, d + days));
 };
 
-export function DealLogModal({ visible, dark, onClose, onSave }: { visible: boolean; dark: boolean; onClose: () => void; onSave: (deal: NewDeal) => void }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+export function DealLogModal({ visible, onClose, onSave }: { visible: boolean; onClose: () => void; onSave: (deal: NewDeal) => void }) {
+  const { palette } = useTheme();
   const [kind, setKind] = useState<DealKind>('new');
   const [amount, setAmount] = useState('');
   const [closedOn, setClosedOn] = useState(localDate());
@@ -53,11 +54,11 @@ export function DealLogModal({ visible, dark, onClose, onSave }: { visible: bool
   };
 
   return (
-    <ModalShell dark={dark} onClose={onClose} title="ディールを獲得" visible={visible}>
+    <ModalShell onClose={onClose} title="ディールを獲得" visible={visible}>
       <View style={styles.chips}>
         {dealKinds.map((entry) => (
           <Pressable key={entry} onPress={() => setKind(entry)} style={[styles.chip, { backgroundColor: kind === entry ? palette.primary : palette.input }]}>
-            <Text style={[styles.chipText, { color: kind === entry ? textOn(palette.primary) : palette.text }]}>{dealKindLabels[entry]} · {Math.round(commissionRates[entry] * 100)}%</Text>
+            <Text style={[styles.chipText, { color: kind === entry ? textOn(palette.primary, palette) : palette.text }]}>{dealKindLabels[entry]} · {Math.round(commissionRates[entry] * 100)}%</Text>
           </Pressable>
         ))}
       </View>
@@ -80,7 +81,7 @@ export function DealLogModal({ visible, dark, onClose, onSave }: { visible: bool
       {rateError ? <Text style={[styles.hint, { color: palette.muted }]}>{rateError}</Text> : null}
       {preview !== null ? <Text style={[styles.preview, { color: palette.gold }]}>コミッション見込み {formatJpy(preview)}</Text> : null}
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.gold }]}><Text style={[styles.saveText, { color: textOn(palette.gold) }]}>🏆 獲得を記録</Text></Pressable>
+      <Pressable onPress={save} style={[styles.save, { backgroundColor: palette.gold }]}><Text style={[styles.saveText, { color: textOn(palette.gold, palette) }]}>🏆 獲得を記録</Text></Pressable>
     </ModalShell>
   );
 }

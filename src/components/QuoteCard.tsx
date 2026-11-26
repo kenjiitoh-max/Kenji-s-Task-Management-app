@@ -1,21 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, interpolateColor, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { Quote } from '../quotes/quotes';
-import { getPalette, radius } from '../theme';
+import { radius } from '../theme';
 
 const GOLD = '#E2C069';
 const GOLD_DEEP = '#B8892B';
 
-export function QuoteCard({ quote, dark, favorite, onPress, onToggleFavorite }: {
+export function QuoteCard({ quote, favorite, onPress, onToggleFavorite }: {
   quote: Quote;
-  dark: boolean;
   favorite: boolean;
   onPress: () => void;
   onToggleFavorite: () => void;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette, dark } = useTheme();
   const glow = useSharedValue(0);
   useEffect(() => {
     glow.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.inOut(Easing.sin) }), -1, true);

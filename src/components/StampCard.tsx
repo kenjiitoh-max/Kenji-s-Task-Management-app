@@ -1,20 +1,20 @@
 import React from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { StyleSheet, Text, View } from 'react-native';
 import { CategoryKind } from '../db/types';
 import { currentStreak } from '../growth/history';
 import { earnedMilestones, MILESTONES, nextMilestone, stampDays, streakEndingAt } from '../growth/stamps';
-import { cardSurface, getPalette, radius, shadow } from '../theme';
+import { cardSurface, radius, shadow } from '../theme';
 import { StampBadge } from './StampBadge';
 
-export function StampCard({ dark, accent, kind, dates, today, pulseKey }: {
-  dark: boolean;
+export function StampCard({ accent, kind, dates, today, pulseKey }: {
   accent: string;
   kind: CategoryKind | null;
   dates: string[];
   today: string;
   pulseKey: number;
 }) {
-  const palette = getPalette(dark ? 'dark' : 'light');
+  const { palette } = useTheme();
   const streak = currentStreak(dates, today);
   const days = stampDays(dates, 14, today);
   const next = nextMilestone(streak);
